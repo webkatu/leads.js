@@ -1,4 +1,4 @@
-var r = new Router();
+var r = leads.Router();
 var called = false;
 var calledTime = 0;
 var middlewareCalledTime = 0;
@@ -28,7 +28,7 @@ var callParamHandler = function callParamHandler(req, res, next, id) {
 
 describe('r.use() register handler', function() {
 	it('should call all', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use(_call);
 		r.use(_call, _call);
 		r.use(_call, _call, _call);
@@ -47,10 +47,10 @@ describe('r.use() register handler', function() {
 
 describe('r.use() register child router', function() {
 	it('should call all', function() {
-		var r = new Router();
-		var cr = new Router();
-		var cr2 = new Router();
-		var ccr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
+		var cr2 = leads.Router();
+		var ccr = leads.Router();
 		ccr.use('/ghi', _call);
 		cr.use('/def', _call);
 		cr.use('/def', ccr);
@@ -66,7 +66,7 @@ describe('r.use() register child router', function() {
 
 describe('r.use() register error handler', function() {
 	it('should call all', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/', callErrorHandler);
 		r.use('/', callErrorHandler, callErrorHandler);
 		r.use('/', callErrorHandler, callErrorHandler, callErrorHandler);
@@ -85,9 +85,9 @@ describe('r.use() register error handler', function() {
 });
 
 describe('r.use() register handler & child router & errorHandler', function() {
-	var r = new Router();
-	var cr = new Router();
-	var ccr = new Router();
+	var r = leads.Router();
+	var cr = leads.Router();
+	var ccr = leads.Router();
 	ccr.use('/', _call, callErrorHandler);
 	cr.use(ccr, callErrorHandler, _call, _call);
 	r.use('/', _call, callErrorHandler, cr, ccr, _call, callErrorHandler);
@@ -106,7 +106,7 @@ describe('r.use() register handler & child router & errorHandler', function() {
 
 describe('r.METHOD() register handler', function() {
 	it('should register', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.get('/', _call);
 		r.get('/', _call, _call);
 		r.get('/', _call, _call, _call);
@@ -122,10 +122,10 @@ describe('r.METHOD() register handler', function() {
 
 describe('r.METHOD() register child router', function() {
 	it('should call all', function() {
-		var r = new Router();
-		var cr = new Router();
-		var cr2 = new Router();
-		var ccr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
+		var cr2 = leads.Router();
+		var ccr = leads.Router();
 		ccr.get('/', _call);
 		cr.get('/', _call);
 		cr.get('/', ccr);
@@ -141,7 +141,7 @@ describe('r.METHOD() register child router', function() {
 
 describe('r.METHOD() register error handler', function() {
 	it('should call all', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.all('/', callErrorHandler);
 		r.all('/', callErrorHandler, callErrorHandler);
 		r.all('/', callErrorHandler, callErrorHandler, callErrorHandler);
@@ -158,7 +158,7 @@ describe('r.METHOD() register error handler', function() {
 
 describe('r.param() register ', function() {
 	it('should call all', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/:id', _call);
 		r.param('id', function(req, res, next, id) {
 			_call(req, res, next);
@@ -172,7 +172,7 @@ describe('r.param() register ', function() {
 
 describe('r.route() register', function() {
 	it('should call all', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.route('/route').all(_call).get(_call).post(_call).put(_call).delete(_call);
 		
 		calledTime = 0;
@@ -183,7 +183,7 @@ describe('r.route() register', function() {
 
 describe('call r.use(string)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/', _call);
 		r.use('/foo', _call);
 		r.use('/f*', _call);
@@ -212,7 +212,7 @@ describe('call r.use(string)', function() {
 
 describe('call r.use(regexp)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use(/\//, _call);
 		r.use(/\/foo/, _call);
 		r.use(/\/f/, _call);
@@ -236,7 +236,7 @@ describe('call r.use(regexp)', function() {
 
 describe('call r.use(array)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use(['/foo', '/hoge'], _call);
 		r.use(['/hoge', '/foo/bar'], _call);
 		r.use(['/hoge', '/huga', '/piyo'], _call);
@@ -256,8 +256,8 @@ describe('call r.use(array)', function() {
 
 describe('call r.use(router)', function() {
 	it('should call properly', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.use(['/foo', '/bar'], _call);
 		cr.use([/\f/, /\/b/], _call);
 		cr.use(/\/bar/, _call);
@@ -279,7 +279,7 @@ describe('call r.use(router)', function() {
 
 describe('call r.METHOD(string)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.get('/', _call);
 		r.get('/foo', _call);
 		r.get('/f*', _call);
@@ -308,7 +308,7 @@ describe('call r.METHOD(string)', function() {
 
 describe('call r.METHOD(regexp)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.post(/\//, _call);
 		r.post(/\/foo/, _call);
 		r.post(/\/f/, _call);
@@ -332,7 +332,7 @@ describe('call r.METHOD(regexp)', function() {
 
 describe('call r.METHOD(array)', function() {
 	it('should call properly', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.post(['/foo', '/hoge'], _call);
 		r.post(['/hoge', '/foo/bar'], _call);
 		r.post(['/hoge', '/huga', '/piyo'], _call);
@@ -352,8 +352,8 @@ describe('call r.METHOD(array)', function() {
 
 describe('call r.METHOD(router)', function() {
 	it('should call properly', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.get('/', _call);
 		r.get('/foo', cr);
 		r.get('/foo/bar', _call);
@@ -369,7 +369,7 @@ describe('call r.METHOD(router)', function() {
 
 describe('call r.get()', function() {
 	it('should call get method only', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.route('/').get(_call).post(_call).put(_call).delete(_call);
 
 		calledTime = 0;
@@ -380,8 +380,8 @@ describe('call r.get()', function() {
 
 describe('call r.param()', function() {
 	it('should call properly', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.use('/user/:id', _call);
 		r.use('/:id', _call);
 		r.use(cr)
@@ -397,8 +397,8 @@ describe('call r.param()', function() {
 
 describe('next()', function() {
 	it('should call properly', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.use(function(req, res, next) {}, _call);
 		r.use(_call, cr, _call);
 		calledTime = 0;
@@ -410,8 +410,8 @@ describe('next()', function() {
 describe('next(\'route\')', function() {
 	it('should skip', function() {
 		var skipListener = function(req, res, next) { next('route'); };
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.use(_call, skipListener, _call);
 		r.use('/:foo', _call, cr, _call); //3
 		r.use('/', skipListener, _call, cr, _call); //0
@@ -428,7 +428,7 @@ describe('next(\'route\')', function() {
 
 describe('setOptions', function() {
 	it('should change options value', function() {
-		var r = new Router();
+		var r = leads.Router();
 		if(r.options.caseSensitive === false && r.options.mergeParams === false) {
 			r.options = { caseSensitive: true, mergeParams: true };
 			assert(r.options.caseSensitive && r.options.mergeParams);
@@ -438,7 +438,7 @@ describe('setOptions', function() {
 
 describe('r.options.caseSensitive', function() {
 	it('should call properly on caseSensitive = false', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo', _call);
 		r.use('/Foo', _call);
 		r.all('/foo', _call);
@@ -451,7 +451,7 @@ describe('r.options.caseSensitive', function() {
 	});
 
 	it('should call properly on caseSensitive = true', function() {
-		var r = new Router({ caseSensitive: true });
+		var r = leads.Router({ caseSensitive: true });
 		r.use('/foo', _call);
 		r.use('/Foo', _call);
 		r.all('/foo', _call);
@@ -466,7 +466,7 @@ describe('r.options.caseSensitive', function() {
 
 describe('r.options.strict', function() {
 	it('should call properly on strict = false', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo', _call);
 		r.use('/foo/', _call);
 		r.all('/foo', _call);
@@ -479,7 +479,7 @@ describe('r.options.strict', function() {
 	});
 
 	it('should call properly on strict = true', function() {
-		var r = new Router({ strict: true });
+		var r = leads.Router({ strict: true });
 		r.use('/foo', _call);
 		r.use('/foo/', _call);
 		r.all('/foo', _call);
@@ -494,8 +494,8 @@ describe('r.options.strict', function() {
 
 describe('r.options.mergeParams', function() {
 	it('should return params that were not merged on mergeParams = false', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		var params = null;
 		cr.use('/:foo', function(req, res, next) {
 			assert(req.params.bar !== params.bar);
@@ -510,8 +510,8 @@ describe('r.options.mergeParams', function() {
 	});
 
 	it('should return params that were merged on mergeParams = true', function() {
-		var r = new Router();
-		var cr = new Router({ mergeParams: true });
+		var r = leads.Router();
+		var cr = leads.Router({ mergeParams: true });
 		var params = null;
 		cr.use('/:foo', function(req, res, next) {
 			assert(req.params.foo === 'baz');
@@ -529,8 +529,8 @@ describe('r.options.mergeParams', function() {
 
 describe('req.baseUrl', function() {
 	it('req.baseUrl === \'/foo\' should return true in r.use()', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.use('/bar', function(req, res, next) {
 			assert(req.baseUrl === '/foo');
 			next();
@@ -541,8 +541,8 @@ describe('req.baseUrl', function() {
 	});
 
 	it('req.baseUrl === \'/foo/bar\' should return true in r.METHOD()', function() {
-		var r = new Router();
-		var cr = new Router();
+		var r = leads.Router();
+		var cr = leads.Router();
 		cr.get('/', function(req, res, next) {
 			assert(req.baseUrl === '/foo/bar');
 			next();
@@ -555,7 +555,7 @@ describe('req.baseUrl', function() {
 
 describe('req.data', function() {
 	it('req.data === 123', function() {
-		var r = new Router();
+		var r = leads.Router();
 
 		r.use(function(req) {
 			assert(req.data === 123);
@@ -565,7 +565,7 @@ describe('req.data', function() {
 	});
 
 	it('req.data === options.data', function() {
-		var r = new Router();
+		var r = leads.Router();
 		var data = {}
 
 		r.use(function(req) {
@@ -579,7 +579,7 @@ describe('req.data', function() {
 describe('req.URL', function() {
 	var urlString = '/foo/bar?a=1&b=2#hash';
 	it('req.originalUrl === location.origin + \'/foo/bar?a=1&b=2#hash\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.originalUrl === location.origin + urlString);
 		});
@@ -588,7 +588,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.secure === location.protocol === \'https:\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.secure === (location.protocol === 'https:'));
 		});
@@ -597,7 +597,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.protocol === location.protocol', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.protocol === location.protocol);
 		});
@@ -606,7 +606,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.hostname === location.hostname', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.hostname === location.hostname);
 		});
@@ -615,7 +615,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.hash === \'#hash\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.hash === '#hash');
 		});
@@ -624,7 +624,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.search === \'?a=1&b=2\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.search === '?a=1&b=2');
 		});
@@ -633,7 +633,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.pathname === \'/foo/bar\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.pathname === '/foo/bar');
 		});
@@ -642,7 +642,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.path === \'/foo/bar?a=1&b=2\'', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.path === '/foo/bar?a=1&b=2');
 		});
@@ -651,7 +651,7 @@ describe('req.URL', function() {
 	});
 
 	it('req.query is {a: \'1\', b: \'2\'}', function() {
-		var r = new Router();
+		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
 			assert(req.query.a === '1');
 			assert(req.query.b === '2');
