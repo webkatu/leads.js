@@ -1,10 +1,10 @@
 {
   "name": "leads",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
-  "main": "bundle.js",
+  "main": "index.js",
   "scripts": {
-    "build": "babel src -d lib && browserify ./lib/main.js -o bundle.js"
+    "build": "babel src -d lib && browserify ./lib/main.js -o index.js"
   },
   "repository": {
     "type": "git",
