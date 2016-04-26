@@ -852,7 +852,6 @@ var Router = function () {
 			var url = _URL2.default.parse(urlString);
 			if (url.origin !== location.origin) {
 				//別オリジンならurl遷移;
-				return console.log(url);
 				location.href = url.href;
 				return;
 			}
@@ -1507,30 +1506,10 @@ var _leads = require('./leads');
 
 var _leads2 = _interopRequireDefault(_leads);
 
-var _Application = require('./Application');
-
-var _Application2 = _interopRequireDefault(_Application);
-
-var _Router = require('./Router');
-
-var _Router2 = _interopRequireDefault(_Router);
-
-var _Request = require('./Request');
-
-var _Request2 = _interopRequireDefault(_Request);
-
-var _Response = require('./Response');
-
-var _Response2 = _interopRequireDefault(_Response);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 window.leads = _leads2.default;
-window.Application = _Application2.default;
-window.Router = _Router2.default;
-window.Request = _Request2.default;
-window.Response = _Response2.default;
-},{"./Application":4,"./Request":5,"./Response":6,"./Router":7,"./leads":11}],13:[function(require,module,exports){
+},{"./leads":11}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
