@@ -83,7 +83,6 @@ export default class Router {
 		let url = URL.parse(urlString);
 		if(url.origin !== location.origin) {
 			//別オリジンならurl遷移;
-			return console.log(url);
 			location.href = url.href;
 			return;
 		}
