@@ -13,11 +13,11 @@ export default class Router {
 		self.handlers = [];
 		self.errorHandlers = [];
 		self.paramHandlers = {};
-		self.options = {};
+		self.defaults = {};
 		let caseSensitive = false;
 		let mergeParams = false;
 		let strict = false;
-		Object.defineProperties(self.options, {
+		Object.defineProperties(self.defaults, {
 			caseSensitive: {
 				get: () => { return caseSensitive; },
 				set: (value) => { caseSensitive = Boolean(value); },
@@ -53,28 +53,28 @@ export default class Router {
 		self.getParamHandlers = getParamHandlers.bind(this);
 
 		Object.defineProperties(this, {
-			options: {
-				get: () => { return self.options; },
+			defaults: {
+				get: () => { return self.defaults; },
 				set: (obj) => {
 					if(typeof obj !== 'object' || obj === null) return;
-					for(let prop in self.options) {
+					for(let prop in self.defaults) {
 						if(! (prop in obj)) continue;
-						self.options[prop] = obj[prop];
+						self.defaults[prop] = obj[prop];
 					}
 				},
 				enumerable: true,
 			},
 		});
 
-		this.options = options;
+		this.defaults = options;
 	}
 
 	dispatch(urlString, method, options) {
 		if(typeof urlString !== 'string') return;
 		if(typeof method !== 'string') method = 'all';
 		if(typeof options !== 'object' || options === null) options = {};
-		if(typeof options.changePath !== 'boolean') options.changePath = true;
 		if(typeof options.addHistory !== 'boolean') options.addHistory = true;
+		if(typeof options.changePath !== 'boolean') options.changePath = true;
 
 		let self = privates(this);
 		let request = new Request();
@@ -90,11 +90,11 @@ export default class Router {
 		request.method = method;
 		request.data = options.data;
 
-		if(options.changePath === false && options.addHistory === false) {
+		if(options.addHistory === false && options.changePath === false) {
 			//何もしない;
-		}else if(options.changePath === false && options.addHistory === true) {
+		}else if(options.addHistory === true && options.changePath === false) {
 			window.history.pushState(null, null, location.href);
-		}else if(options.changePath === true && options.addHistory === false) {
+		}else if(options.addHistory === false && options.changePath === true) {
 			window.history.replaceChild(null, null, url.href);
 		}else {
 			//default;
@@ -144,12 +144,14 @@ export default class Router {
 	all(path) { privates(this).METHOD(path, 'all', arguments); return this; }
 	get(path) { privates(this).METHOD(path, 'get', arguments); return this; }
 	post(path) { privates(this).METHOD(path, 'post', arguments); return this; }
+	head(path) { privates(this).METHOD(path, 'head', arguments); return this; }
 	put(path) { privates(this).METHOD(path, 'put', arguments); return this; }
 	delete(path) { privates(this).METHOD(path, 'delete', arguments); return this; }
+	options(path) { privates(this).METHOD(path, 'options', arguments); return this; }
 
 	route(path) {
 		let ret = {};
-		['all', 'get', 'post', 'put', 'delete'].forEach((method) => {
+		['all', 'get', 'post', 'head', 'put', 'delete', 'options'].forEach((method) => {
 			//ArrowFunctionはarguments使えないのでfunction(){}.bind(this)で代替;
 			ret[method] = function() {
 				this[method].bind(this, path).apply(this, arguments);
@@ -236,7 +238,8 @@ function getRemainder(matched) {
 //keysはpathToRegExp()の返り値の第二引数を想定。URLparameterのproperty名が入っている配列;
 //parentParamsは継承するparams。子ルーターのURLparameterと親のルーターのURLparameterを併合する時のため。
 function getParams(matched, keys, parentParams) {
-	let params = privates(this).options.mergeParams ? Object.assign({}, parentParams) : {};
+	let self = privates(this);
+	let params = self.defaults.mergeParams ? Object.assign({}, parentParams) : {};
 	matched = matched.concat([]);
 
 	matched.shift();
@@ -532,14 +535,14 @@ function register(properties, destination) {
 	let handler = properties;
 	if(handler.type === 'middleware') {
 		handler.pattern = pathToRegexp(handler.path, null, {
-			sensitive: self.options.caseSensitive,
-			strict: self.options.strict,
+			sensitive: self.defaults.caseSensitive,
+			strict: self.defaults.strict,
 			end: false,
 		});
 	}else {
 		handler.pattern = pathToRegexp(handler.path, null, {
-			sensitive: self.options.caseSensitive,
-			strict: self.options.strict,
+			sensitive: self.defaults.caseSensitive,
+			strict: self.defaults.strict,
 			end: true,
 		});
 	}

@@ -429,9 +429,9 @@ describe('next(\'route\')', function() {
 describe('setOptions', function() {
 	it('should change options value', function() {
 		var r = leads.Router();
-		if(r.options.caseSensitive === false && r.options.mergeParams === false) {
-			r.options = { caseSensitive: true, mergeParams: true };
-			assert(r.options.caseSensitive && r.options.mergeParams);
+		if(r.defaults.caseSensitive === false && r.defaults.mergeParams === false) {
+			r.defaults = { caseSensitive: true, mergeParams: true };
+			assert(r.defaults.caseSensitive && r.defaults.mergeParams);
 		}else { assert(false); }
 	});
 });
