@@ -11,7 +11,7 @@ var testData = {
 	blob: new Blob(['This is the blob'], { type: 'text/plain' }),
 };
 
-testApp.use('/nodejs/test', app);
+testApp.use('/test', app);
 
 app.use('/', function(req, response, next) {
 	res = response;
@@ -22,7 +22,7 @@ app.get('/response.html', function(req, res, next) {
 	res.send(html, { baseElement: document.documentElement });
 	document.documentElement.lang = 'en';
 
-	res.options = {
+	res.defaults = {
 		baseElement: document.body,
 		filename: 'file',
 		url: true,
@@ -61,7 +61,7 @@ var sendR = leads.Router();
 
 sendR.use('/document', function(req, res, next) {
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '/nodejs/test/index.html');
+	xhr.open('GET', '/test/index.html');
 	xhr.responseType = 'document';
 	xhr.onloadend = function() {
 		console.log(xhr.response);
@@ -96,9 +96,9 @@ sendR.use('/arraybuffer', function(req, res, next) {
 	res.send(testData.arraybuffer);
 });
 
-var sendOptionsR = leads.Router();
+var sendDefaultsR = leads.Router();
 
-sendOptionsR.use('/0', function(req, res, next) {
+sendDefaultsR.use('/0', function(req, res, next) {
 	var div = document.createElement('div');
 	document.body.appendChild(div);
 	res.send('<p>foo</p><p>bar</p>', {
@@ -107,14 +107,14 @@ sendOptionsR.use('/0', function(req, res, next) {
 	});
 });
 
-sendOptionsR.use('/1', function(req, res, next) {
+sendDefaultsR.use('/1', function(req, res, next) {
 	var div = document.createElement('div');
 	document.body.appendChild(div);
-	res.options.baseElement = div;
+	res.defaults.baseElement = div;
 	res.send('<p>foo</p><p><bar</p>');
 });
 
-sendOptionsR.use('/2', function(req, res, next) {
+sendDefaultsR.use('/2', function(req, res, next) {
 	res.send(testData.object, {
 		title: 'test send',
 		filename: 'object',
@@ -122,7 +122,7 @@ sendOptionsR.use('/2', function(req, res, next) {
 	});
 });
 
-sendOptionsR.use('/3', function(req, res, next) {
+sendDefaultsR.use('/3', function(req, res, next) {
 	res.send(testData.blob, {
 		filename: 'blob.txt',
 		title: 'aaa',
@@ -131,8 +131,8 @@ sendOptionsR.use('/3', function(req, res, next) {
 	});
 });
 
-sendOptionsR.use('/4', function(req, res, next) {
-	res.options = {
+sendDefaultsR.use('/4', function(req, res, next) {
+	res.defaults = {
 		type: 'text/plain',
 		filename: 'foobar.txt',
 		transition: true,
@@ -141,7 +141,7 @@ sendOptionsR.use('/4', function(req, res, next) {
 	res.send(testData.arraybuffer);
 });
 
-sendR.use('/options', sendOptionsR);
+sendR.use('/defaults', sendDefaultsR);
 
 app.use('/send', sendR);
 
@@ -164,7 +164,7 @@ sendFileR.use('/string', function(req, res, next) {
 });
 
 sendFileR.use('/localURL', function(req, res, next) {
-	res.sendFile('/nodejs/test/index.html');
+	res.sendFile('/test/index.html');
 });
 
 sendFileR.use('/imageURL', function(req, res, next) {
@@ -175,9 +175,9 @@ sendFileR.use('/url', function(req, res, next) {
 	res.sendFile('https://google.com');
 });
 
-var sendFileOptionsR = leads.Router();
+var sendFileDefaultsR = leads.Router();
 
-sendFileOptionsR.use('/0', function(req, res, next) {
+sendFileDefaultsR.use('/0', function(req, res, next) {
 	var div = document.createElement('div');
 	document.body.appendChild(div);
 	res.sendFile(testData.blob, {
@@ -190,10 +190,10 @@ sendFileOptionsR.use('/0', function(req, res, next) {
 	});
 });
 
-sendFileOptionsR.use('/1', function(req, res, next) {
+sendFileDefaultsR.use('/1', function(req, res, next) {
 	var div = document.createElement('div');
 	document.body.appendChild(div);
-	res.options = {
+	res.defaults = {
 		baseElement: div,
 		filename: 'blob.html',
 		url: false,
@@ -202,7 +202,7 @@ sendFileOptionsR.use('/1', function(req, res, next) {
 	res.sendFile(testData.blob);
 });
 
-sendFileOptionsR.use('/2', function(req, res, next) {
+sendFileDefaultsR.use('/2', function(req, res, next) {
 	res.sendFile(url, {
 		title: 'test sendFile',
 		type: 'text/html',
@@ -211,7 +211,7 @@ sendFileOptionsR.use('/2', function(req, res, next) {
 	});
 });
 
-sendFileOptionsR.use('/3', function(req, res, next) {
+sendFileDefaultsR.use('/3', function(req, res, next) {
 	res.sendFile('https://www.google.com', {
 		type: 'text/plain',
 		url: false,
@@ -219,7 +219,7 @@ sendFileOptionsR.use('/3', function(req, res, next) {
 	});
 });
 
-sendFileOptionsR.use('/4', function(req, res, next) {
+sendFileDefaultsR.use('/4', function(req, res, next) {
 		res.sendFile('https://www.google.com', {
 		type: 'text/plain',
 		url: true,
@@ -227,7 +227,7 @@ sendFileOptionsR.use('/4', function(req, res, next) {
 	});
 });
 
-sendFileR.use('/options', sendFileOptionsR);
+sendFileR.use('/defaults', sendFileDefaultsR);
 
 app.use('/sendFile', sendFileR);
 
@@ -253,9 +253,9 @@ sendStatusR.use('/abc', function(req, res, next) {
 	res.sendStatus('abc');
 });
 
-var sendStatusOptionsR = leads.Router();
+var sendStatusDefaultsR = leads.Router();
 
-sendStatusOptionsR.use('/0', function(req, res, next) {
+sendStatusDefaultsR.use('/0', function(req, res, next) {
 	document.body.textContent = 'test sendStatus';
 	var div = document.createElement('div');
 	document.body.appendChild(div);
@@ -264,104 +264,104 @@ sendStatusOptionsR.use('/0', function(req, res, next) {
 	});
 });
 
-sendStatusOptionsR.use('/1', function(req, res, next) {
+sendStatusDefaultsR.use('/1', function(req, res, next) {
 	document.body.textContent = 'test sendStatus';
 	var div = document.createElement('div');
 	document.body.appendChild(div);
-	res.options.baseElement = div;
+	res.defaults.baseElement = div;
 	res.sendStatus(403);
 });
 
-sendStatusOptionsR.use('/2', function(req, res, next) {
+sendStatusDefaultsR.use('/2', function(req, res, next) {
 	res.sendStatus(403, {
 		title: 'test sendStatusTitle',
 		message: 'test sendStatusMessage',
 	});
 });
 
-sendStatusR.use('/options', sendStatusOptionsR);
+sendStatusR.use('/defaults', sendStatusDefaultsR);
 
 app.use('/sendStatus', sendStatusR);
 
 /*
 dispatch;
 
-testApp.all('/nodejs/test/response.html');
-testApp.all('/nodejs/test/download');
+testApp.all('/test/response.html');
+testApp.all('/test/download');
 
-testApp.all('/nodejs/test/send/document');
-testApp.all('/nodejs/test/send/element');
-testApp.all('/nodejs/test/send/string');
-testApp.all('/nodejs/test/send/blob');
-testApp.all('/nodejs/test/send/json');
-testApp.all('/nodejs/test/send/arraybuffer');
-testApp.all('/nodejs/test/send/options/0');
-testApp.all('/nodejs/test/send/options/1');
-testApp.all('/nodejs/test/send/options/2');
-testApp.all('/nodejs/test/send/options/3');
-testApp.all('/nodejs/test/send/options/4');
+testApp.all('/test/send/document');
+testApp.all('/test/send/element');
+testApp.all('/test/send/string');
+testApp.all('/test/send/blob');
+testApp.all('/test/send/json');
+testApp.all('/test/send/arraybuffer');
+testApp.all('/test/send/defaults/0');
+testApp.all('/test/send/defaults/1');
+testApp.all('/test/send/defaults/2');
+testApp.all('/test/send/defaults/3');
+testApp.all('/test/send/defaults/4');
 
-testApp.all('/nodejs/test/sendFile/blob');
-testApp.all('/nodejs/test/sendFile/json');
-testApp.all('/nodejs/test/sendFile/arraybuffer');
-testApp.all('/nodejs/test/sendFile/string');
-testApp.all('/nodejs/test/sendFile/localURL');
-testApp.all('/nodejs/test/sendFile/imageURL');
-testApp.all('/nodejs/test/sendFile/url');
-testApp.all('/nodejs/test/sendFile/options/0');
-testApp.all('/nodejs/test/sendFile/options/1');
-testApp.all('/nodejs/test/sendFile/options/2');
-testApp.all('/nodejs/test/sendFile/options/3');
-testApp.all('/nodejs/test/sendFile/options/4');
+testApp.all('/test/sendFile/blob');
+testApp.all('/test/sendFile/json');
+testApp.all('/test/sendFile/arraybuffer');
+testApp.all('/test/sendFile/string');
+testApp.all('/test/sendFile/localURL');
+testApp.all('/test/sendFile/imageURL');
+testApp.all('/test/sendFile/url');
+testApp.all('/test/sendFile/defaults/0');
+testApp.all('/test/sendFile/defaults/1');
+testApp.all('/test/sendFile/defaults/2');
+testApp.all('/test/sendFile/defaults/3');
+testApp.all('/test/sendFile/defaults/4');
 
-testApp.all('/nodejs/test/sendStatus/200');
-testApp.all('/nodejs/test/sendStatus/404');
-testApp.all('/nodejs/test/sendStatus/500');
-testApp.all('/nodejs/test/sendStatus/9999');
-testApp.all('/nodejs/test/sendStatus/abc');
-testApp.all('/nodejs/test/sendStatus/options/0');
-testApp.all('/nodejs/test/sendStatus/options/1');
-testApp.all('/nodejs/test/sendStatus/options/2');
+testApp.all('/test/sendStatus/200');
+testApp.all('/test/sendStatus/404');
+testApp.all('/test/sendStatus/500');
+testApp.all('/test/sendStatus/9999');
+testApp.all('/test/sendStatus/abc');
+testApp.all('/test/sendStatus/defaults/0');
+testApp.all('/test/sendStatus/defaults/1');
+testApp.all('/test/sendStatus/defaults/2');
 */
 
 function test() {
 	var pathes = [
-		'/nodejs/test/response.html',
+		'/test/response.html',
 		
-		'/nodejs/test/download',
-		'/nodejs/test/send/document',
-		'/nodejs/test/send/element',
-		'/nodejs/test/send/string',
-		'/nodejs/test/send/blob',
-		'/nodejs/test/send/json',
-		'/nodejs/test/send/arraybuffer',
-		'/nodejs/test/send/options/0',
-		'/nodejs/test/send/options/1',
-		'/nodejs/test/send/options/2',
-		//'/nodejs/test/send/options/3',
-		//'/nodejs/test/send/options/4',
+		'/test/download',
+		'/test/send/document',
+		'/test/send/element',
+		'/test/send/string',
+		'/test/send/blob',
+		'/test/send/json',
+		'/test/send/arraybuffer',
+		'/test/send/defaults/0',
+		'/test/send/defaults/1',
+		'/test/send/defaults/2',
+		//'/test/send/defaults/3',
+		//'/test/send/defaults/4',
 
-		'/nodejs/test/sendFile/blob',
-		'/nodejs/test/sendFile/json',
-		'/nodejs/test/sendFile/arraybuffer',
-		'/nodejs/test/sendFile/string',
-		'/nodejs/test/sendFile/localURL',
-		'/nodejs/test/sendFile/imageURL',
-		'/nodejs/test/sendFile/url',
-		'/nodejs/test/sendFile/options/0',
-		'/nodejs/test/sendFile/options/1',
-		'/nodejs/test/sendFile/options/2',
-		//'/nodejs/test/sendFile/options/3',
-		//'/nodejs/test/sendFile/options/4',
+		'/test/sendFile/blob',
+		'/test/sendFile/json',
+		'/test/sendFile/arraybuffer',
+		'/test/sendFile/string',
+		'/test/sendFile/localURL',
+		'/test/sendFile/imageURL',
+		'/test/sendFile/url',
+		'/test/sendFile/defaults/0',
+		'/test/sendFile/defaults/1',
+		'/test/sendFile/defaults/2',
+		//'/test/sendFile/defaults/3',
+		//'/test/sendFile/defaults/4',
 
-		'/nodejs/test/sendStatus/200',
-		'/nodejs/test/sendStatus/404',
-		'/nodejs/test/sendStatus/500',
-		'/nodejs/test/sendStatus/9999',
-		'/nodejs/test/sendStatus/abc',
-		'/nodejs/test/sendStatus/options/0',
-		'/nodejs/test/sendStatus/options/1',
-		'/nodejs/test/sendStatus/options/2',
+		'/test/sendStatus/200',
+		'/test/sendStatus/404',
+		'/test/sendStatus/500',
+		'/test/sendStatus/9999',
+		'/test/sendStatus/abc',
+		'/test/sendStatus/defaults/0',
+		'/test/sendStatus/defaults/1',
+		'/test/sendStatus/defaults/2',
 	];
 	var i = 1;
 	var flag = false;

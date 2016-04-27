@@ -7,12 +7,12 @@ export default class Response {
 	constructor() {
 		let self = privates(this);
 	
-		self.options = {};
+		self.defaults = {};
 		let baseElement = document.body;
 		let filename = 'file';
 		let url = true;
 		let transition = false;
-		Object.defineProperties(self.options, {
+		Object.defineProperties(self.defaults, {
 			baseElement: {
 				get: () => { return baseElement; },
 				set: (value) => { if(value instanceof Element) baseElement = value; },
@@ -44,13 +44,13 @@ export default class Response {
 		self.createBlob = createBlob.bind(this);
 
 		Object.defineProperties(this, {
-			options: {
-				get: () => { return self.options; },
+			defaults: {
+				get: () => { return self.defaults; },
 				set: (obj) => {
 					if(typeof obj !== 'object' || obj === null) return;
-					for(let prop in self.options) {
+					for(let prop in self.defaults) {
 						if(! (prop in obj)) continue;
-						self.options[prop] = obj[prop];
+						self.defaults[prop] = obj[prop];
 					}
 				},
 				enumerable: true,
@@ -88,10 +88,10 @@ export default class Response {
 			options = {};
 		}
 		if(typeof options.filename !== 'string' && typeof options.filename !== 'number') {
-			options.filename = self.options.filename;
+			options.filename = self.defaults.filename;
 		}
 		if(options.url === undefined) {
-			options.url = self.options.url;
+			options.url = self.defaults.url;
 		}
 		if(typeof options.error !== 'function') {
 			options.error = new Function();
@@ -147,7 +147,7 @@ export default class Response {
 			options = {};
 		}
 		if(! (options.baseElement instanceof Element)) {
-			options.baseElement = self.options.baseElement;
+			options.baseElement = self.defaults.baseElement;
 		}
 
 		if(data instanceof Element) {
@@ -211,19 +211,19 @@ export default class Response {
 			options = {};
 		}
 		if(! (options.baseElement instanceof Element)) {
-			options.baseElement = self.options.baseElement;
+			options.baseElement = self.defaults.baseElement;
 		}
 		if(typeof options.filename !== 'string' && typeof options.filename !== 'number') {
-			options.filename = self.options.filename;
+			options.filename = self.defaults.filename;
 		}
 		if(typeof options.type !== 'string') {
 			options.type = '';
 		}
 		if(options.url === undefined) {
-			options.url = self.options.url;
+			options.url = self.defaults.url;
 		}
 		if(options.transition === undefined) {
-			options.transition = self.options.transition;
+			options.transition = self.defaults.transition;
 		}
 
 
@@ -270,7 +270,7 @@ export default class Response {
 			options = {};
 		}
 		if(! (options.baseElement instanceof Element)) {
-			options.baseElement = self.options.baseElement;
+			options.baseElement = self.defaults.baseElement;
 		}
 
 		let responseText = httpStatusTable[status]
