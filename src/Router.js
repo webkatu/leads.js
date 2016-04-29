@@ -86,6 +86,7 @@ export default class Router {
 			location.href = url.href;
 			return;
 		}
+		request.app = this;
 		internal(request).setURL(url);
 		request.method = method;
 		request.data = options.data;

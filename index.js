@@ -855,6 +855,7 @@ var Router = function () {
 				location.href = url.href;
 				return;
 			}
+			request.app = this;
 			(0, _internal2.default)(request).setURL(url);
 			request.method = method;
 			request.data = options.data;
