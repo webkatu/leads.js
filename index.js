@@ -872,7 +872,7 @@ var Router = function () {
 					window.history.pushState(null, null, url.href);
 				}
 
-			self.goGetCalledHandler = self.gfGetCalledHandler(request, url.pathname, method, '', {});
+			self.goGetCalledHandler = self.gfGetCalledHandler(url.pathname, method, '', {});
 			self.runNextHandler(request, response);
 		}
 
@@ -1115,17 +1115,18 @@ function getMatchedMiddlewareHandlers(handler, req, remainder) {
 }
 
 /**
- * RouterからpathStringとmethodにマッチするhandlerを全て取得する
- * @param [string] pathString パス
+ * Routerからpathとmethodにマッチするhandlerを全て取得する
+ * @param [string] path パス
  * @param [string] method httpメソッド名
  * @return [array] マッチしたhandler(matchedHandler)が全て入っている配列
- *     matchedHandlerの構造 => { handler, matched, remainder }
+ *     matchedHandlerの構造 => { handler, matched, baseUrl, remainder }
  */
-function getMatchedHandlers(pathString, method) {
+function getMatchedHandlers(path, method, _baseUrl) {
 	var self = privates(this);
 	var matchedHandlers = [];
 	self.handlers.forEach(function (handler) {
-		var matched = handler.pattern.exec(pathString);
+		var baseUrl = _baseUrl;
+		var matched = handler.pattern.exec(path);
 		if (matched === null) {
 			return;
 		}
@@ -1134,17 +1135,18 @@ function getMatchedHandlers(pathString, method) {
 			if (remainder === null) {
 				return;
 			}
-			matchedHandlers.push({ handler: handler, matched: matched, remainder: remainder });
+			baseUrl += _URL2.default.removeTrailingSlash(matched[0]);
+			matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: remainder });
 		} else if (method === 'all' || handler.method === 'all' || handler.method === method) {
-			matchedHandlers.push({ handler: handler, matched: matched, remainder: '/' });
+			matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: '/' });
 		}
 	});
 	return matchedHandlers;
 }
 
-function getCalledHandlers(pathString, method, baseUrl, params) {
+function getCalledHandlers(path, method, baseUrl, params) {
 	var self = privates(this);
-	var matchedHandlers = self.getMatchedHandlers(pathString, method);
+	var matchedHandlers = self.getMatchedHandlers(path, method, baseUrl);
 	var calledHandlers = [];
 	var paramsObserver = {};
 	matchedHandlers.forEach(function (matchedHandler) {
@@ -1152,7 +1154,7 @@ function getCalledHandlers(pathString, method, baseUrl, params) {
 		var matched = matchedHandler.matched;
 		var remainder = matchedHandler.remainder;
 		var req = {
-			baseUrl: baseUrl,
+			baseUrl: matchedHandler.baseUrl,
 			params: self.getParams(matched, handler.pattern.keys, params)
 		};
 
@@ -1168,8 +1170,8 @@ function getCalledHandlers(pathString, method, baseUrl, params) {
 }
 
 // ../sub/gfGetCalledHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
-function gfGetCalledHandler(request, pathString, method, baseUrl, params) {
-	var calledHandlers = privates(this).getCalledHandlers(pathString, method, baseUrl, params);
+function gfGetCalledHandler(path, method, baseUrl, params) {
+	var calledHandlers = privates(this).getCalledHandlers(path, method, baseUrl, params);
 	var i = 0;
 	var l = 0;
 	var childRouter = null;
@@ -1214,8 +1216,7 @@ function gfGetCalledHandler(request, pathString, method, baseUrl, params) {
 			var listener = calledHandler.handler.listeners[l];
 			if (listener instanceof Router) {
 				childRouter = privates(listener);
-				var _baseUrl = request.pathname.replace(RegExp(calledHandler.remainder + '$'), '');
-				childRouter.goGetCalledHandler = childRouter.gfGetCalledHandler(request, calledHandler.remainder, method, _baseUrl, calledHandler.req.params);
+				childRouter.goGetCalledHandler = childRouter.gfGetCalledHandler(calledHandler.remainder, method, calledHandler.req.baseUrl, calledHandler.req.params);
 				var _nextHandler = childRouter.getNextHandler();
 				if (_nextHandler) {
 					return {
@@ -1246,9 +1247,9 @@ function getMatchedErrorHandlers(request) {
 	var self = privates(this);
 	var matchedHandlers = [];
 	var method = request.method;
-	var pathString = request.pathname;
+	var path = request.pathname;
 	self.errorHandlers.forEach(function (handler) {
-		var matched = handler.pattern.exec(pathString);
+		var matched = handler.pattern.exec(path);
 		if (matched === null) {
 			return;
 		}

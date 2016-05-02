@@ -40,7 +40,7 @@ describe('r.use() register handler', function() {
 		r.use(/\//, _call);
 		
 		calledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(calledTime === 15);
 	});
 });
@@ -59,7 +59,7 @@ describe('r.use() register child router', function() {
 		r.use('/abc', cr, cr2);
 		
 		calledTime = 0;
-		r.all('/abc/def/ghi', options);
+		r.dispatch('/abc/def/ghi', null, options);
 		assert(calledTime === 4);
 	});
 });
@@ -79,7 +79,7 @@ describe('r.use() register error handler', function() {
 		});
 
 		errorHandlerCalledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(errorHandlerCalledTime === 12);
 	});
 });
@@ -93,13 +93,13 @@ describe('r.use() register handler & child router & errorHandler', function() {
 	r.use('/', _call, callErrorHandler, cr, ccr, _call, callErrorHandler);
 	it('should call handler & router', function() {
 		calledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(calledTime === 6);
 	});
 	it('should call errorHandler', function() {
 		r.use('/', function(req, res, next) { next('error') });
 		errorHandlerCalledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(errorHandlerCalledTime === 2);
 	});
 });
@@ -115,7 +115,7 @@ describe('r.METHOD() register handler', function() {
 		r.get(/\//, _call);
 		
 		calledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(calledTime === 9);
 	});
 });
@@ -134,7 +134,7 @@ describe('r.METHOD() register child router', function() {
 		r.get('/', cr, cr2);
 		
 		calledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(calledTime === 4);
 	});
 });
@@ -151,7 +151,7 @@ describe('r.METHOD() register error handler', function() {
 		});
 
 		errorHandlerCalledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(errorHandlerCalledTime === 6);
 	});
 });
@@ -165,7 +165,7 @@ describe('r.param() register ', function() {
 		});
 
 		calledTime = 0;
-		r.all('/abc', options);
+		r.dispatch('/abc', null, options);
 		assert(calledTime === 2);
 	});
 });
@@ -176,7 +176,7 @@ describe('r.route() register', function() {
 		r.route('/route').all(_call).get(_call).post(_call).put(_call).delete(_call);
 		
 		calledTime = 0;
-		r.all('/route', options);
+		r.dispatch('/route', null, options);
 		assert(calledTime === 5);
 	});
 });
@@ -196,16 +196,16 @@ describe('call r.use(string)', function() {
 		r.use('/bar', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 3);
 		calledTime = 0;
-		r.all('/foo/br', options);
+		r.dispatch('/foo/br', null, options);
 		assert(calledTime === 5);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 6);
 		calledTime = 0;
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 		assert(calledTime === 7);
 	});
 });
@@ -223,13 +223,13 @@ describe('call r.use(regexp)', function() {
 		r.use(/\/bar/, _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 2);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 4);
 		calledTime = 0;
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 		assert(calledTime === 5);
 	});
 });
@@ -243,13 +243,13 @@ describe('call r.use(array)', function() {
 		r.use(['/bar', /\/baz/, /foo/], _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 1);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 2);
 		calledTime = 0;
-		r.all('/baz', options);
+		r.dispatch('/baz', null, options);
 		assert(calledTime === 1);
 	});
 });
@@ -266,13 +266,13 @@ describe('call r.use(router)', function() {
 		r.use('/foo/bar', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 0);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 3);
 		calledTime = 0;
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 		assert(calledTime === 3);
 	});
 });
@@ -292,16 +292,16 @@ describe('call r.METHOD(string)', function() {
 		r.get('/bar', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 2);
 		calledTime = 0;
-		r.all('/foo/br', options);
+		r.dispatch('/foo/br', null, options);
 		assert(calledTime === 3);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 4);
 		calledTime = 0;
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 		assert(calledTime === 3);
 	});
 });
@@ -319,13 +319,13 @@ describe('call r.METHOD(regexp)', function() {
 		r.post(/\/bar/, _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 4);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 7);
 		calledTime = 0;
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 		assert(calledTime === 8);
 	});
 });
@@ -339,13 +339,13 @@ describe('call r.METHOD(array)', function() {
 		r.post(['/bar', /\/baz/, /foo/], _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 2);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 2);
 		calledTime = 0;
-		r.all('/baz', options);
+		r.dispatch('/baz', null, options);
 		assert(calledTime === 1);
 	});
 });
@@ -359,10 +359,10 @@ describe('call r.METHOD(router)', function() {
 		r.get('/foo/bar', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 1);
 		calledTime = 0;
-		r.all('/foo/bar', options);
+		r.dispatch('/foo/bar', null, options);
 		assert(calledTime === 1);
 	});
 });
@@ -373,7 +373,7 @@ describe('call r.get()', function() {
 		r.route('/').get(_call).post(_call).put(_call).delete(_call);
 
 		calledTime = 0;
-		r.get('/', options);
+		r.dispatch('/', 'get', options);
 		assert(calledTime === 1);
 	}); 
 });
@@ -390,7 +390,7 @@ describe('call r.param()', function() {
 		r.param('id', callParamHandler);
 
 		paramHandlerCalledTime = 0;
-		r.all('/user/123', options);
+		r.dispatch('/user/123', null, options);
 		assert(paramHandlerCalledTime === 2);
 	});
 });
@@ -402,7 +402,7 @@ describe('next()', function() {
 		cr.use(function(req, res, next) {}, _call);
 		r.use(_call, cr, _call);
 		calledTime = 0;
-		r.all('/', options);
+		r.dispatch('/', null, options);
 		assert(calledTime === 1);
 	});
 });
@@ -421,7 +421,7 @@ describe('next(\'route\')', function() {
 		r.param('foo', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
+		r.dispatch('/foo', null, options);
 		assert(calledTime === 7);
 	});
 });
@@ -445,8 +445,8 @@ describe('r.options.caseSensitive', function() {
 		r.all('/Foo', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
-		r.all('/Foo', options);
+		r.dispatch('/foo', null, options);
+		r.dispatch('/Foo', null, options);
 		assert(calledTime === 8);
 	});
 
@@ -458,8 +458,8 @@ describe('r.options.caseSensitive', function() {
 		r.all('/Foo', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
-		r.all('/Foo', options);
+		r.dispatch('/foo', null, options);
+		r.dispatch('/Foo', null, options);
 		assert(calledTime === 4);
 	});
 });
@@ -473,8 +473,8 @@ describe('r.options.strict', function() {
 		r.all('/foo/', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
-		r.all('/foo/', options);
+		r.dispatch('/foo', null, options);
+		r.dispatch('/foo/', null, options);
 		assert(calledTime === 8);
 	});
 
@@ -486,8 +486,8 @@ describe('r.options.strict', function() {
 		r.all('/foo/', _call);
 
 		calledTime = 0;
-		r.all('/foo', options);
-		r.all('/foo/', options);
+		r.dispatch('/foo', null, options);
+		r.dispatch('/foo/', null, options);
 		assert(calledTime === 5);
 	});
 });
@@ -506,7 +506,7 @@ describe('r.options.mergeParams', function() {
 			next();
 		}, cr);
 
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 	});
 
 	it('should return params that were merged on mergeParams = true', function() {
@@ -523,33 +523,44 @@ describe('r.options.mergeParams', function() {
 			next();
 		}, cr);
 
-		r.all('/foo/bar/baz', options);
+		r.dispatch('/foo/bar/baz', null, options);
 	});
 });
 
 describe('req.baseUrl', function() {
-	it('req.baseUrl === \'/foo\' should return true in r.use()', function() {
+	it('req.baseUrl === \'/foo\'', function() {
 		var r = leads.Router();
 		var cr = leads.Router();
-		cr.use('/bar', function(req, res, next) {
+
+		var callback = function(req, res, next) {
 			assert(req.baseUrl === '/foo');
 			next();
-		});
-		r.use('/foo', cr);
+		}
+		cr.use('/', callback);
+		cr.get('/bar', callback);
 
-		r.all('/foo/bar', options);
+		r.use('/foo', cr, callback);
+
+		r.dispatch('/foo/bar', null, options);
 	});
 
-	it('req.baseUrl === \'/foo/bar\' should return true in r.METHOD()', function() {
+	it('req.baseUrl === \'/foo/bar\'', function() {
 		var r = leads.Router();
 		var cr = leads.Router();
-		cr.get('/', function(req, res, next) {
+		var ccr = leads.Router();
+
+		var callback = function(req, res, next) {
 			assert(req.baseUrl === '/foo/bar');
 			next();
-		});
-		r.get('/foo/bar', cr);
+		}
 
-		r.all('/foo/bar', options);
+		ccr.use(callback);
+		ccr.get('/baz', callback);
+
+		cr.use('/bar', ccr, callback);
+		r.use('/foo/', cr);
+
+		r.dispatch('/foo/bar/baz', null, options);
 	});
 });
 
@@ -584,7 +595,7 @@ describe('req.URL', function() {
 			assert(req.originalUrl === location.origin + urlString);
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.secure === location.protocol === \'https:\'', function() {
@@ -593,7 +604,7 @@ describe('req.URL', function() {
 			assert(req.secure === (location.protocol === 'https:'));
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.protocol === location.protocol', function() {
@@ -602,7 +613,7 @@ describe('req.URL', function() {
 			assert(req.protocol === location.protocol);
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.hostname === location.hostname', function() {
@@ -611,7 +622,7 @@ describe('req.URL', function() {
 			assert(req.hostname === location.hostname);
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.hash === \'#hash\'', function() {
@@ -620,7 +631,7 @@ describe('req.URL', function() {
 			assert(req.hash === '#hash');
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.search === \'?a=1&b=2\'', function() {
@@ -629,7 +640,7 @@ describe('req.URL', function() {
 			assert(req.search === '?a=1&b=2');
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.pathname === \'/foo/bar\'', function() {
@@ -638,7 +649,7 @@ describe('req.URL', function() {
 			assert(req.pathname === '/foo/bar');
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.path === \'/foo/bar?a=1&b=2\'', function() {
@@ -647,7 +658,7 @@ describe('req.URL', function() {
 			assert(req.path === '/foo/bar?a=1&b=2');
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 
 	it('req.query is {a: \'1\', b: \'2\'}', function() {
@@ -657,6 +668,6 @@ describe('req.URL', function() {
 			assert(req.query.b === '2');
 		});
 
-		r.all(urlString, options);
+		r.dispatch(urlString, null, options);
 	});
 });

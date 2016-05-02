@@ -103,7 +103,7 @@ export default class Router {
 			window.history.pushState(null, null, url.href);
 		}
 
-		self.goGetCalledHandler = self.gfGetCalledHandler(request, url.pathname, method, '', {});
+		self.goGetCalledHandler = self.gfGetCalledHandler(url.pathname, method, '', {});
 		self.runNextHandler(request, response);
 	}
 
@@ -306,17 +306,18 @@ function getMatchedMiddlewareHandlers(handler, req, remainder) {
 }
 
 /**
- * RouterからpathStringとmethodにマッチするhandlerを全て取得する
- * @param [string] pathString パス
+ * Routerからpathとmethodにマッチするhandlerを全て取得する
+ * @param [string] path パス
  * @param [string] method httpメソッド名
  * @return [array] マッチしたhandler(matchedHandler)が全て入っている配列
- *     matchedHandlerの構造 => { handler, matched, remainder }
+ *     matchedHandlerの構造 => { handler, matched, baseUrl, remainder }
  */
-function getMatchedHandlers(pathString, method) {
+function getMatchedHandlers(path, method, _baseUrl) {
 	let self = privates(this);
 	let matchedHandlers = [];
 	self.handlers.forEach((handler) => {
-		let matched = handler.pattern.exec(pathString);
+		let baseUrl = _baseUrl;
+		let matched = handler.pattern.exec(path);
 		if(matched === null) {
 			return;
 		}
@@ -325,9 +326,10 @@ function getMatchedHandlers(pathString, method) {
 			if(remainder === null) {
 				return;
 			}
-			matchedHandlers.push({ handler, matched, remainder });
+			baseUrl += URL.removeTrailingSlash(matched[0]);
+			matchedHandlers.push({ handler, matched, baseUrl, remainder });
 		}else if(method === 'all' || handler.method === 'all' || handler.method === method) {
-			matchedHandlers.push({ handler, matched, remainder: '/' });
+			matchedHandlers.push({ handler, matched, baseUrl, remainder: '/' });
 		}
 	});
 	return matchedHandlers;
@@ -335,9 +337,9 @@ function getMatchedHandlers(pathString, method) {
 
 
 
-function getCalledHandlers(pathString, method, baseUrl, params) {
+function getCalledHandlers(path, method, baseUrl, params) {
 	let self = privates(this);
-	let matchedHandlers = self.getMatchedHandlers(pathString, method);
+	let matchedHandlers = self.getMatchedHandlers(path, method, baseUrl);
 	let calledHandlers = [];
 	let paramsObserver = {};
 	matchedHandlers.forEach((matchedHandler) => {
@@ -345,7 +347,7 @@ function getCalledHandlers(pathString, method, baseUrl, params) {
 		let matched = matchedHandler.matched;
 		let remainder = matchedHandler.remainder;
 		let req = {
-			baseUrl: baseUrl,
+			baseUrl: matchedHandler.baseUrl,
 			params: self.getParams(matched, handler.pattern.keys, params),
 		};
 
@@ -361,8 +363,8 @@ function getCalledHandlers(pathString, method, baseUrl, params) {
 }
 
 // ../sub/gfGetCalledHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
-function gfGetCalledHandler(request, pathString, method, baseUrl, params) {
-	let calledHandlers = privates(this).getCalledHandlers(pathString, method, baseUrl, params);
+function gfGetCalledHandler(path, method, baseUrl, params) {
+	let calledHandlers = privates(this).getCalledHandlers(path, method, baseUrl, params);
 	let i = 0;
 	let l = 0;
 	let childRouter = null;
@@ -408,12 +410,10 @@ function gfGetCalledHandler(request, pathString, method, baseUrl, params) {
 			let listener = calledHandler.handler.listeners[l];
 			if(listener instanceof Router) {
 				childRouter = privates(listener);
-				let baseUrl = request.pathname.replace(RegExp(calledHandler.remainder + '$'), '');
 				childRouter.goGetCalledHandler = childRouter.gfGetCalledHandler(
-					request,
 					calledHandler.remainder,
 					method,
-					baseUrl,
+					calledHandler.req.baseUrl,
 					calledHandler.req.params
 				);
 				let nextHandler = childRouter.getNextHandler();
@@ -446,9 +446,9 @@ function getMatchedErrorHandlers(request) {
 	let self = privates(this);
 	let matchedHandlers = [];
 	let method = request.method;
-	let pathString = request.pathname;
+	let path = request.pathname;
 	self.errorHandlers.forEach((handler) => {
-		let matched = handler.pattern.exec(pathString);
+		let matched = handler.pattern.exec(path);
 		if(matched === null) {
 			return;
 		}
