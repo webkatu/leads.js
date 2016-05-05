@@ -123,7 +123,7 @@ export default class Response {
 	 * dataがtextの場合HTML内に表示
 	 * dataがfileの場合res.sendFile()で処理をする
 	 * @param [Element|Document|Blob|ArrayBuffer|Object|Number|String] data 送るデータ
-	 *     ElementはElement内のHTMLをoptions.baseElementに表示
+	 *     Elementはoptions.baseElementにElementを追加
 	 *     Documentはルート要素(html)のHTMLを現在のDocumentのルート要素のHTMLと切り替える
 	 *     Blob/ArrayBuffer/Objectはres.sendFile()に渡す
 	 *     Number/Stringはそのままoptions.baseElementに表示
@@ -151,7 +151,7 @@ export default class Response {
 		}
 
 		if(data instanceof Element) {
-			options.baseElement.innerHTML = data.innerHTML;
+			options.baseElement.appendChild(data);
 			if(options.title !== undefined && options.title !== null) {
 				document.title = options.title;
 			}

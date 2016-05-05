@@ -429,6 +429,7 @@ function gfGetCalledHandler(path, method, baseUrl, params) {
 			}
 
 			l++;
+			//次のhandlerがあるなら最終的にこのobjectを返す;
 			return {
 				done: false,
 				value:{
