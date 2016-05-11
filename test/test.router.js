@@ -588,6 +588,26 @@ describe('req.baseUrl', function() {
 	});
 });
 
+describe('req.cookies', function() {
+	it('should behave dynamic', function() {
+		var r = leads.Router();
+
+		r.use('/', function(req, res, next) {
+			for(var prop in req.cookies) {
+				res.clearCookie(prop);
+				res.clearCookie(prop, { path: '' });
+			}
+			assert(! ('aaa' in req.cookies));
+			document.cookie = 'aaa = 111';
+			assert(req.cookies.aaa === '111');
+			res.cookie('bbb', 222);
+			assert(req.cookies.bbb === '222');
+		});
+
+		r.dispatch('');
+	});
+});
+
 describe('req.data', function() {
 	it('req.data === 123', function() {
 		var r = leads.Router();
