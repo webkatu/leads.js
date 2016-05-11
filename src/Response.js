@@ -12,6 +12,10 @@ export default class Response {
 		let filename = 'file';
 		let url = true;
 		let transition = false;
+		let cookieExpires = '';
+		let cookiePath = '/';
+		let cookieDomain = '';
+		let cookieSecure = false;
 		Object.defineProperties(self.defaults, {
 			baseElement: {
 				get: () => { return baseElement; },
@@ -33,32 +37,79 @@ export default class Response {
 				set: (value) => { transition = Boolean(value); },
 				enumerable: true,
 			},
+			cookieExpires: {
+				get: () => { return cookieExpires; },
+				set: (value) => { cookieExpires = String(value) },
+				enumerable: true,
+			},
+			cookiePath: {
+				get: () => { return cookiePath; },
+				set: (value) => { cookiePath = String(value) },
+				enumerable: true,
+			},
+			cookieDomain: {
+				get: () => { return cookieDomain; },
+				set: (value) => { cookieDomain = String(value) },
+				enumerable: true,
+			},
+			cookieSecure: {
+				get: () => { return cookieSecure; },
+				set: (value) => { cookieSecure = Boolean(value) },
+				enumerable: true,
+			},
 		});
 
 		for(let method in privateMethods) {
 			self[method] = privateMethods[method].bind(this);
 		}
+	}
 
-		Object.defineProperties(this, {
-			defaults: {
-				get: () => { return self.defaults; },
-				set: (obj) => {
-					if(typeof obj !== 'object' || obj === null) return;
-					for(let prop in self.defaults) {
-						if(! (prop in obj)) continue;
-						self.defaults[prop] = obj[prop];
-					}
-				},
-				enumerable: true,
-			},
-		});
+	get defaults() {
+		return privates(this).defaults;
+	}
+	set defaults(obj) {
+		let self = privates(this);
+		if(typeof obj !== 'object' || obj === null) return;
+		for(let prop in self.defaults) {
+			if(! (prop in obj)) continue;
+			self.defaults[prop] = obj[prop];
+		}
 	}
 
 	cookie(name, value, options) {
+		let self = privates(this);
+		if(typeof options !== 'object' || options === null) {
+			options = {};
+		}
+		if(typeof options.expires !== 'string' && typeof options.expires !== 'number') {
+			options.expires = self.defaults.cookieExpires;
+		}
+		if(typeof options.path !== 'string') {
+			options.path = self.defaults.cookiePath;
+		}
+		if(typeof options.domain !== 'string') {
+			options.domain = self.defaults.cookieDomain;
+		}
+		if(typeof options.secure !== 'boolean') {
+			options.secure = self.defaults.cookieSecure;
+		}
 		cookies.set(name, value, options);
 	}
 
 	clearCookie(name, options) {
+		let self = privates(this);
+		if(typeof options !== 'object' || options === null) {
+			options = {};
+		}
+		if(typeof options.path !== 'string') {
+			options.path = self.defaults.cookiePath;
+		}
+		if(typeof options.domain !== 'string') {
+			options.domain = self.defaults.cookieDomain;
+		}
+		if(typeof options.secure !== 'boolean') {
+			options.secure = self.defaults.cookieSecure;
+		}
 		cookies.remove(name, options);
 	}
 

@@ -39,21 +39,17 @@ export default class Router {
 			self[method] = privateMethods[method].bind(this);
 		}
 
-		Object.defineProperties(this, {
-			defaults: {
-				get: () => { return self.defaults; },
-				set: (obj) => {
-					if(typeof obj !== 'object' || obj === null) return;
-					for(let prop in self.defaults) {
-						if(! (prop in obj)) continue;
-						self.defaults[prop] = obj[prop];
-					}
-				},
-				enumerable: true,
-			},
-		});
-
 		this.defaults = options;
+	}
+
+	get defaults() { return privates(this).defaults; }
+	set defaults(obj) {
+		let self = privates(this);
+		if(typeof obj !== 'object' || obj === null) return;
+		for(let prop in self.defaults) {
+			if(! (prop in obj)) continue;
+			self.defaults[prop] = obj[prop];
+		}
 	}
 
 	dispatch(urlString, method, options) {
@@ -175,7 +171,6 @@ export default class Router {
 }
 
 const privateMethods = {
-
 	METHOD(path, method, args) {
 		if(path === undefined || path === null) {
 			return;
@@ -543,5 +538,4 @@ const privateMethods = {
 		}
 		self.handlers.push(handler);
 	},
-
 }

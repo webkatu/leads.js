@@ -1,24 +1,47 @@
 import internal from './internal';
+import ns from './namespace';
 import qs from 'querystring';
 import cookies from 'js-cookie';
 
+const privates = ns();
 export default class Request {
 	constructor() {
 		let self = internal(this);
 		self.setURL = setURL.bind(this);
 
-		this.originalUrl = null;
-		this.protocol = null;
-		this.hostname = null;
-		this.pathname = null;
-		this.path = null;
-		this.search = null;
+		/*
+		this.app = null;
+		this.baseUrl = null;
+		this.data = null;
+		this.dispatcher = null;
 		this.hash = null;
+		this.hostname = null;
+		this.method = null;
+		this.originalUrl = null;
+		this.params = null;
+		this.path = null;
+		this.pathname = null;
+		this.protocol = null;
 		this.query = null;
-		this.cookies = Object.freeze(cookies.get());
-		this.params = {};
+		this.search = null;
+		this.secure = null;
+		*/
+	}
+
+	get cookies() {
+		let selfClass = privates(Request);
+		if(document.cookie === selfClass.documentCookie && selfClass.documentCookie !== undefined) {
+			return selfClass.cookies;
+		}
+
+		selfClass.documentCookie = document.cookie;
+		selfClass.cookies = Object.freeze(cookies.get());
+		return selfClass.cookies;
 	}
 }
+
+
+
 
 function setURL(url) {
 	this.originalUrl = url.href;

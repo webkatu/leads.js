@@ -216,9 +216,15 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _internal = require('./internal');
 
 var _internal2 = _interopRequireDefault(_internal);
+
+var _namespace = require('./namespace');
+
+var _namespace2 = _interopRequireDefault(_namespace);
 
 var _querystring = require('querystring');
 
@@ -232,23 +238,50 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Request = function Request() {
-	_classCallCheck(this, Request);
+var privates = (0, _namespace2.default)();
 
-	var self = (0, _internal2.default)(this);
-	self.setURL = setURL.bind(this);
+var Request = function () {
+	function Request() {
+		_classCallCheck(this, Request);
 
-	this.originalUrl = null;
-	this.protocol = null;
-	this.hostname = null;
-	this.pathname = null;
-	this.path = null;
-	this.search = null;
-	this.hash = null;
-	this.query = null;
-	this.cookies = Object.freeze(_jsCookie2.default.get());
-	this.params = {};
-};
+		var self = (0, _internal2.default)(this);
+		self.setURL = setURL.bind(this);
+
+		/*
+  this.app = null;
+  this.baseUrl = null;
+  this.data = null;
+  this.dispatcher = null;
+  this.hash = null;
+  this.hostname = null;
+  this.method = null;
+  this.originalUrl = null;
+  this.params = null;
+  this.path = null;
+  this.pathname = null;
+  this.protocol = null;
+  this.query = null;
+  this.search = null;
+  this.secure = null;
+  */
+	}
+
+	_createClass(Request, [{
+		key: 'cookies',
+		get: function get() {
+			var selfClass = privates(Request);
+			if (document.cookie === selfClass.documentCookie && selfClass.documentCookie !== undefined) {
+				return selfClass.cookies;
+			}
+
+			selfClass.documentCookie = document.cookie;
+			selfClass.cookies = Object.freeze(_jsCookie2.default.get());
+			return selfClass.cookies;
+		}
+	}]);
+
+	return Request;
+}();
 
 exports.default = Request;
 
@@ -265,7 +298,7 @@ function setURL(url) {
 	this.hash = url.hash;
 	this.query = _querystring2.default.parse(url.query);
 }
-},{"./internal":10,"js-cookie":15,"querystring":3}],6:[function(require,module,exports){
+},{"./internal":10,"./namespace":13,"js-cookie":15,"querystring":3}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -305,6 +338,10 @@ var Response = function () {
 		var filename = 'file';
 		var url = true;
 		var transition = false;
+		var cookieExpires = '';
+		var cookiePath = '/';
+		var cookieDomain = '';
+		var cookieSecure = false;
 		Object.defineProperties(self.defaults, {
 			baseElement: {
 				get: function get() {
@@ -341,38 +378,87 @@ var Response = function () {
 					transition = Boolean(value);
 				},
 				enumerable: true
+			},
+			cookieExpires: {
+				get: function get() {
+					return cookieExpires;
+				},
+				set: function set(value) {
+					cookieExpires = String(value);
+				},
+				enumerable: true
+			},
+			cookiePath: {
+				get: function get() {
+					return cookiePath;
+				},
+				set: function set(value) {
+					cookiePath = String(value);
+				},
+				enumerable: true
+			},
+			cookieDomain: {
+				get: function get() {
+					return cookieDomain;
+				},
+				set: function set(value) {
+					cookieDomain = String(value);
+				},
+				enumerable: true
+			},
+			cookieSecure: {
+				get: function get() {
+					return cookieSecure;
+				},
+				set: function set(value) {
+					cookieSecure = Boolean(value);
+				},
+				enumerable: true
 			}
 		});
 
 		for (var method in privateMethods) {
 			self[method] = privateMethods[method].bind(this);
 		}
-
-		Object.defineProperties(this, {
-			defaults: {
-				get: function get() {
-					return self.defaults;
-				},
-				set: function set(obj) {
-					if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) return;
-					for (var prop in self.defaults) {
-						if (!(prop in obj)) continue;
-						self.defaults[prop] = obj[prop];
-					}
-				},
-				enumerable: true
-			}
-		});
 	}
 
 	_createClass(Response, [{
 		key: 'cookie',
 		value: function cookie(name, value, options) {
+			var self = privates(this);
+			if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object' || options === null) {
+				options = {};
+			}
+			if (typeof options.expires !== 'string' && typeof options.expires !== 'number') {
+				options.expires = self.defaults.cookieExpires;
+			}
+			if (typeof options.path !== 'string') {
+				options.path = self.defaults.cookiePath;
+			}
+			if (typeof options.domain !== 'string') {
+				options.domain = self.defaults.cookieDomain;
+			}
+			if (typeof options.secure !== 'boolean') {
+				options.secure = self.defaults.cookieSecure;
+			}
 			_jsCookie2.default.set(name, value, options);
 		}
 	}, {
 		key: 'clearCookie',
 		value: function clearCookie(name, options) {
+			var self = privates(this);
+			if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object' || options === null) {
+				options = {};
+			}
+			if (typeof options.path !== 'string') {
+				options.path = self.defaults.cookiePath;
+			}
+			if (typeof options.domain !== 'string') {
+				options.domain = self.defaults.cookieDomain;
+			}
+			if (typeof options.secure !== 'boolean') {
+				options.secure = self.defaults.cookieSecure;
+			}
 			_jsCookie2.default.remove(name, options);
 		}
 
@@ -600,6 +686,19 @@ var Response = function () {
 
 			options.baseElement.innerHTML = options.message === undefined || options.message === null ? responseText : options.message;
 		}
+	}, {
+		key: 'defaults',
+		get: function get() {
+			return privates(this).defaults;
+		},
+		set: function set(obj) {
+			var self = privates(this);
+			if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) return;
+			for (var prop in self.defaults) {
+				if (!(prop in obj)) continue;
+				self.defaults[prop] = obj[prop];
+			}
+		}
 	}]);
 
 	return Response;
@@ -796,22 +895,6 @@ var Router = function () {
 			self[method] = privateMethods[method].bind(this);
 		}
 
-		Object.defineProperties(this, {
-			defaults: {
-				get: function get() {
-					return self.defaults;
-				},
-				set: function set(obj) {
-					if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) return;
-					for (var prop in self.defaults) {
-						if (!(prop in obj)) continue;
-						self.defaults[prop] = obj[prop];
-					}
-				},
-				enumerable: true
-			}
-		});
-
 		this.defaults = options;
 	}
 
@@ -966,6 +1049,19 @@ var Router = function () {
 				}
 				self.paramHandlers[name] = { listeners: [callback], type: 'parameter' };
 			});
+		}
+	}, {
+		key: 'defaults',
+		get: function get() {
+			return privates(this).defaults;
+		},
+		set: function set(obj) {
+			var self = privates(this);
+			if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) return;
+			for (var prop in self.defaults) {
+				if (!(prop in obj)) continue;
+				self.defaults[prop] = obj[prop];
+			}
 		}
 	}]);
 
