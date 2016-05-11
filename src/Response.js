@@ -2,7 +2,7 @@ import ns from './namespace';
 import cookies from 'js-cookie';
 import httpStatusTable from './httpStatusTable';
 
-let privates = ns();
+const privates = ns();
 export default class Response {
 	constructor() {
 		let self = privates(this);
@@ -35,13 +35,9 @@ export default class Response {
 			},
 		});
 
-		self.downloadOnCross = downloadOnCross.bind(this);
-		self.downloadByA = downloadByA.bind(this);
-		self.downloadByXHR = downloadByXHR.bind(this);
-		self.blobDownload = blobDownload.bind(this);
-		self.showObject = showObject.bind(this);
-		self.showBlob = showBlob.bind(this);
-		self.createBlob = createBlob.bind(this);
+		for(let method in privateMethods) {
+			self[method] = privateMethods[method].bind(this);
+		}
 
 		Object.defineProperties(this, {
 			defaults: {
@@ -288,99 +284,104 @@ export default class Response {
 
 }
 
-function downloadOnCross(url, options) {
-	let self = privates(this);
 
-	let a = document.createElement('a');
-	a.href = url;
-	self.downloadByXHR(a.href, options.filename, options.type, options.error);
-/*
-	if(a.origin !== location.origin) {
+const privateMethods = {
+
+	downloadOnCross(url, options) {
+		let self = privates(this);
+
+		let a = document.createElement('a');
+		a.href = url;
 		self.downloadByXHR(a.href, options.filename, options.type, options.error);
-		return;
-	}
-	if(! ('download' in a)) {
-		self.downloadByXHR(a.href, options.filename, options.type, options.error);
-		return;
-	}
-	self.downloadByA(a.href, options.filename, options.type);
-*/
-}
+		/*
+		if(a.origin !== location.origin) {
+			self.downloadByXHR(a.href, options.filename, options.type, options.error);
+			return;
+		}
+		if(! ('download' in a)) {
+			self.downloadByXHR(a.href, options.filename, options.type, options.error);
+			return;
+		}
+		self.downloadByA(a.href, options.filename, options.type);
+		*/
+	},
 
-function downloadByA(url, filename, type) {
-	let a = document.createElement('a');
-	a.download = filename;
-	a.href = url;
-	a.type = type;
-	document.body.appendChild(a);
-	a.click();
-	document.body.removeChild(a);
-}
+	downloadByA(url, filename, type) {
+		let a = document.createElement('a');
+		a.download = filename;
+		a.href = url;
+		a.type = type;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	},
 
-function downloadByXHR(url, filename, type, error) {
-	let self = privates(this);
-	let xhr = new XMLHttpRequest();
-	xhr.open('GET', url);
-	xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-	xhr.overrideMimeType(type);
-	xhr.responseType = 'blob';
+	downloadByXHR(url, filename, type, error) {
+		let self = privates(this);
+		let xhr = new XMLHttpRequest();
+		xhr.open('GET', url);
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		xhr.overrideMimeType(type);
+		xhr.responseType = 'blob';
 
-	xhr.onerror = function(e) { error(e); };
-	xhr.onloadend = function() {
-		if(xhr.status !== 200) return;
-		self.blobDownload(xhr.response, filename);
-	};
-	xhr.send();
-}
+		xhr.onerror = (e) => { error(e); };
+		xhr.onloadend = () => {
+			if(xhr.status !== 200) return;
+			self.blobDownload(xhr.response, filename);
+		};
+		xhr.send();
+	},
 
-function blobDownload(blob, filename) {
-	let self = privates(this);
-	if(window.navigator.msSaveBlob) {
-		window.navigator.msSaveBlob(blob, filename);
-		return;
-	}
-	if(! ('download' in document.createElement('a'))) return;
+	blobDownload(blob, filename) {
+		let self = privates(this);
+		if(window.navigator.msSaveBlob) {
+			window.navigator.msSaveBlob(blob, filename);
+			return;
+		}
+		if(! ('download' in document.createElement('a'))) return;
 
-	let url = window.URL.createObjectURL(blob);
-	self.downloadByA(url, filename, blob.type);
-	window.setTimeout(() => { window.URL.revokeObjectURL(url); }, 100);
-}
+		let url = window.URL.createObjectURL(blob);
+		self.downloadByA(url, filename, blob.type);
+		window.setTimeout(() => { window.URL.revokeObjectURL(url); }, 100);
+	},
 
-function showObject(url, options) {
-	let object = document.createElement('object');
-	object.data = url;
-	object.type = options.type;
-	options.baseElement.innerHTML = '';
-	options.baseElement.appendChild(object);
-	return object;
-}
+	showObject(url, options) {
+		let object = document.createElement('object');
+		object.data = url;
+		object.type = options.type;
+		options.baseElement.innerHTML = '';
+		options.baseElement.appendChild(object);
+		return object;
+	},
 
-function showBlob(blob, options) {
-	let self = privates(this);
-	if(window.navigator.msSaveBlob) {
-		window.navigator.msSaveBlob(blob, options.filename);
-		return null;
-	}
+	showBlob(blob, options) {
+		let self = privates(this);
+		if(window.navigator.msSaveBlob) {
+			window.navigator.msSaveBlob(blob, options.filename);
+			return null;
+		}
 
-	let url = window.URL.createObjectURL(blob);
-	
-	if(options.transition === true) {
-		location.replace(url);
-		return null;
-	}
+		let url = window.URL.createObjectURL(blob);
+		
+		if(options.transition === true) {
+			location.replace(url);
+			return null;
+		}
 
-	return self.showObject(url, options);
-}
+		return self.showObject(url, options);
+	},
 
-function createBlob(param, type) {
-	if(param instanceof Blob) {
-		return param;
-	}
-	if(param instanceof ArrayBuffer) {
-		return new Blob([ param ], { type: type || 'application/octet-stream' });
-	}
-	if(typeof param === 'object' && param !== null) {
-		return new Blob([ JSON.stringify(param) ], { type: type || 'application/json' });
-	}
-	return new Blob([ String(param) ], { type: type || 'text/plain' });
+	createBlob(param, type) {
+		if(param instanceof Blob) {
+			return param;
+		}
+		if(param instanceof ArrayBuffer) {
+			return new Blob([ param ], { type: type || 'application/octet-stream' });
+		}
+		if(typeof param === 'object' && param !== null) {
+			return new Blob([ JSON.stringify(param) ], { type: type || 'application/json' });
+		}
+		return new Blob([ String(param) ], { type: type || 'text/plain' });
+	},
+
 }

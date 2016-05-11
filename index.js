@@ -344,13 +344,9 @@ var Response = function () {
 			}
 		});
 
-		self.downloadOnCross = downloadOnCross.bind(this);
-		self.downloadByA = downloadByA.bind(this);
-		self.downloadByXHR = downloadByXHR.bind(this);
-		self.blobDownload = blobDownload.bind(this);
-		self.showObject = showObject.bind(this);
-		self.showBlob = showBlob.bind(this);
-		self.createBlob = createBlob.bind(this);
+		for (var method in privateMethods) {
+			self[method] = privateMethods[method].bind(this);
+		}
 
 		Object.defineProperties(this, {
 			defaults: {
@@ -612,106 +608,102 @@ var Response = function () {
 exports.default = Response;
 
 
-function downloadOnCross(url, options) {
-	var self = privates(this);
+var privateMethods = {
+	downloadOnCross: function downloadOnCross(url, options) {
+		var self = privates(this);
 
-	var a = document.createElement('a');
-	a.href = url;
-	self.downloadByXHR(a.href, options.filename, options.type, options.error);
-	/*
- 	if(a.origin !== location.origin) {
- 		self.downloadByXHR(a.href, options.filename, options.type, options.error);
- 		return;
- 	}
- 	if(! ('download' in a)) {
- 		self.downloadByXHR(a.href, options.filename, options.type, options.error);
- 		return;
- 	}
- 	self.downloadByA(a.href, options.filename, options.type);
- */
-}
+		var a = document.createElement('a');
+		a.href = url;
+		self.downloadByXHR(a.href, options.filename, options.type, options.error);
+		/*
+  if(a.origin !== location.origin) {
+  	self.downloadByXHR(a.href, options.filename, options.type, options.error);
+  	return;
+  }
+  if(! ('download' in a)) {
+  	self.downloadByXHR(a.href, options.filename, options.type, options.error);
+  	return;
+  }
+  self.downloadByA(a.href, options.filename, options.type);
+  */
+	},
+	downloadByA: function downloadByA(url, filename, type) {
+		var a = document.createElement('a');
+		a.download = filename;
+		a.href = url;
+		a.type = type;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	},
+	downloadByXHR: function downloadByXHR(url, filename, type, error) {
+		var self = privates(this);
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url);
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		xhr.overrideMimeType(type);
+		xhr.responseType = 'blob';
 
-function downloadByA(url, filename, type) {
-	var a = document.createElement('a');
-	a.download = filename;
-	a.href = url;
-	a.type = type;
-	document.body.appendChild(a);
-	a.click();
-	document.body.removeChild(a);
-}
+		xhr.onerror = function (e) {
+			error(e);
+		};
+		xhr.onloadend = function () {
+			if (xhr.status !== 200) return;
+			self.blobDownload(xhr.response, filename);
+		};
+		xhr.send();
+	},
+	blobDownload: function blobDownload(blob, filename) {
+		var self = privates(this);
+		if (window.navigator.msSaveBlob) {
+			window.navigator.msSaveBlob(blob, filename);
+			return;
+		}
+		if (!('download' in document.createElement('a'))) return;
 
-function downloadByXHR(url, filename, type, error) {
-	var self = privates(this);
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url);
-	xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-	xhr.overrideMimeType(type);
-	xhr.responseType = 'blob';
+		var url = window.URL.createObjectURL(blob);
+		self.downloadByA(url, filename, blob.type);
+		window.setTimeout(function () {
+			window.URL.revokeObjectURL(url);
+		}, 100);
+	},
+	showObject: function showObject(url, options) {
+		var object = document.createElement('object');
+		object.data = url;
+		object.type = options.type;
+		options.baseElement.innerHTML = '';
+		options.baseElement.appendChild(object);
+		return object;
+	},
+	showBlob: function showBlob(blob, options) {
+		var self = privates(this);
+		if (window.navigator.msSaveBlob) {
+			window.navigator.msSaveBlob(blob, options.filename);
+			return null;
+		}
 
-	xhr.onerror = function (e) {
-		error(e);
-	};
-	xhr.onloadend = function () {
-		if (xhr.status !== 200) return;
-		self.blobDownload(xhr.response, filename);
-	};
-	xhr.send();
-}
+		var url = window.URL.createObjectURL(blob);
 
-function blobDownload(blob, filename) {
-	var self = privates(this);
-	if (window.navigator.msSaveBlob) {
-		window.navigator.msSaveBlob(blob, filename);
-		return;
+		if (options.transition === true) {
+			location.replace(url);
+			return null;
+		}
+
+		return self.showObject(url, options);
+	},
+	createBlob: function createBlob(param, type) {
+		if (param instanceof Blob) {
+			return param;
+		}
+		if (param instanceof ArrayBuffer) {
+			return new Blob([param], { type: type || 'application/octet-stream' });
+		}
+		if ((typeof param === 'undefined' ? 'undefined' : _typeof(param)) === 'object' && param !== null) {
+			return new Blob([JSON.stringify(param)], { type: type || 'application/json' });
+		}
+		return new Blob([String(param)], { type: type || 'text/plain' });
 	}
-	if (!('download' in document.createElement('a'))) return;
-
-	var url = window.URL.createObjectURL(blob);
-	self.downloadByA(url, filename, blob.type);
-	window.setTimeout(function () {
-		window.URL.revokeObjectURL(url);
-	}, 100);
-}
-
-function showObject(url, options) {
-	var object = document.createElement('object');
-	object.data = url;
-	object.type = options.type;
-	options.baseElement.innerHTML = '';
-	options.baseElement.appendChild(object);
-	return object;
-}
-
-function showBlob(blob, options) {
-	var self = privates(this);
-	if (window.navigator.msSaveBlob) {
-		window.navigator.msSaveBlob(blob, options.filename);
-		return null;
-	}
-
-	var url = window.URL.createObjectURL(blob);
-
-	if (options.transition === true) {
-		location.replace(url);
-		return null;
-	}
-
-	return self.showObject(url, options);
-}
-
-function createBlob(param, type) {
-	if (param instanceof Blob) {
-		return param;
-	}
-	if (param instanceof ArrayBuffer) {
-		return new Blob([param], { type: type || 'application/octet-stream' });
-	}
-	if ((typeof param === 'undefined' ? 'undefined' : _typeof(param)) === 'object' && param !== null) {
-		return new Blob([JSON.stringify(param)], { type: type || 'application/json' });
-	}
-	return new Blob([String(param)], { type: type || 'text/plain' });
-}
+};
 },{"./httpStatusTable":9,"./namespace":13,"js-cookie":15}],7:[function(require,module,exports){
 'use strict';
 
@@ -800,22 +792,9 @@ var Router = function () {
 			}
 		});
 
-		self.register = register.bind(this);
-		self.METHOD = METHOD.bind(this);
-		self.param = param.bind(this);
-		self.getMatchedHandlers = getMatchedHandlers.bind(this);
-		self.getCalledHandlers = getCalledHandlers.bind(this);
-		self.gfGetCalledHandler = gfGetCalledHandler.bind(this);
-		self.getNextHandler = getNextHandler.bind(this);
-		self.runNextHandler = runNextHandler.bind(this);
-		self.getMatchedErrorHandlers = getMatchedErrorHandlers.bind(this);
-		self.gfGetMatchedErrorHandler = gfGetMatchedErrorHandler.bind(this);
-		self.getNextErrorHandler = getNextErrorHandler.bind(this);
-		self.runNextErrorHandler = runNextErrorHandler.bind(this);
-		self.getRemainder = getRemainder.bind(this);
-		self.getParams = getParams.bind(this);
-		self.getChangedParamKeys = getChangedParamKeys.bind(this);
-		self.getParamHandlers = getParamHandlers.bind(this);
+		for (var method in privateMethods) {
+			self[method] = privateMethods[method].bind(this);
+		}
 
 		Object.defineProperties(this, {
 			defaults: {
@@ -996,380 +975,370 @@ var Router = function () {
 exports.default = Router;
 
 
-function METHOD(path, method, args) {
-	if (path === undefined || path === null) {
-		return;
-	}
-	if (args.length === 1) {
-		this.dispatch(path, method);
-		return;
-	}
-	if (args.length === 2 && _typeof(args[1]) === 'object' && args[1] !== null && !(args[1] instanceof Router)) {
-		//args[1] is options;
-		this.dispatch(path, method, args[1]);
-		return;
-	}
-	var self = privates(this);
-	var type = 'method';
-	var listeners = [];
-	Array.prototype.shift.bind(args)();
-	Array.prototype.forEach.bind(args)(function (arg) {
-		if (typeof arg !== 'function' && !(arg instanceof Router)) {
+var privateMethods = {
+	METHOD: function METHOD(path, method, args) {
+		if (path === undefined || path === null) {
 			return;
 		}
-		if (typeof arg === 'function' && arg.length === 4) {
-			//error handler登録;
-			self.register({ path: path, type: type, method: method, listener: arg }, 'error');
+		if (args.length === 1) {
+			this.dispatch(path, method);
 			return;
 		}
-		listeners.push(arg);
-	});
-	if (listeners.length !== 0) {
-		self.register({ path: path, type: type, method: method, listeners: listeners });
-	}
-}
-
-//matchedはpattern.execの返り値を想定;
-//元のURLからマッチした部分を引いて先頭にスラッシュをつけたものを返す
-//(これが新たなpathになり子ルーターに渡される);
-//元のURLからマッチした部分を引いた結果がURLのpathに相応しくないならnullを返す;
-function getRemainder(matched) {
-	if (matched.index !== 0) {
-		return null;
-	}
-	var remainder = matched.input.replace(matched[0], '');
-	if (matched[0].slice(-1) !== '/' && remainder[0] !== '/' && remainder !== '') {
-		return null;
-	}
-	return _URL2.default.addFirstSlash(remainder);
-}
-
-//matchedはpattern.execの返り値を想定。matchedは破壊されない;
-//keysはpathToRegExp()の返り値の第二引数を想定。URLparameterのproperty名が入っている配列;
-//parentParamsは継承するparams。子ルーターのURLparameterと親のルーターのURLparameterを併合する時のため。
-function getParams(matched, keys, parentParams) {
-	var self = privates(this);
-	var params = self.defaults.mergeParams ? _extends({}, parentParams) : {};
-	matched = matched.concat([]);
-
-	matched.shift();
-	if (matched.length === 0) {
-		return params;
-	}
-
-	keys.forEach(function (value) {
-		if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object') {
+		if (args.length === 2 && _typeof(args[1]) === 'object' && args[1] !== null && !(args[1] instanceof Router)) {
+			//args[1] is options;
+			this.dispatch(path, method, args[1]);
 			return;
 		}
-		params[value.name] = matched.shift();
-	});
-
-	return params;
-}
-
-//paramsObserverとparamsのpropertyに違いがあれば、その違うproperty名を取得する;
-//取得されたpropertyはそのproperty名で登録されているparamHandlerを取得するために用いられる;
-function getChangedParamKeys(paramsObserver, params) {
-	var keys = [];
-	for (var prop in params) {
-		if (paramsObserver[prop] !== params[prop]) {
-			paramsObserver[prop] = params[prop];
-			keys.push(prop);
-		}
-	}
-	return keys;
-}
-
-/**
- * keysに含まれているparamHandler全て取得
- * @param [array] keys getChangedParamKeysの返り値
- * @return [array] keysにマッチしたparamHandlerが全て入っている配列
- *     paramHandlerの構造 => { handler, paramValue, req }
- */
-function getParamHandlers(keys, req) {
-	var self = privates(this);
-	var paramHandlers = [];
-	keys.forEach(function (key) {
-		if (key in self.paramHandlers === false) {
-			return;
-		}
-		paramHandlers.push({
-			handler: {
-				type: self.paramHandlers[key].type,
-				listeners: self.paramHandlers[key].listeners
-			},
-			paramValue: req.params[key],
-			req: req
-		});
-	});
-	return paramHandlers;
-}
-
-function getMatchedMiddlewareHandlers(handler, req, remainder) {
-	if (typeof handler.listener === 'function') {
-		return [{ handler: handler, req: req }];
-	}
-	if (handler.listener instanceof Router) {
-		return handler.listener.getMatchedHandlers(remainder, req.method, req.baseUrl, req.params);
-	}
-}
-
-/**
- * Routerからpathとmethodにマッチするhandlerを全て取得する
- * @param [string] path パス
- * @param [string] method httpメソッド名
- * @return [array] マッチしたhandler(matchedHandler)が全て入っている配列
- *     matchedHandlerの構造 => { handler, matched, baseUrl, remainder }
- */
-function getMatchedHandlers(path, method, _baseUrl) {
-	var self = privates(this);
-	var matchedHandlers = [];
-	self.handlers.forEach(function (handler) {
-		var baseUrl = _baseUrl;
-		var matched = handler.pattern.exec(path);
-		if (matched === null) {
-			return;
-		}
-		if (handler.type === 'middleware') {
-			var remainder = self.getRemainder(matched);
-			if (remainder === null) {
+		var self = privates(this);
+		var type = 'method';
+		var listeners = [];
+		Array.prototype.shift.bind(args)();
+		Array.prototype.forEach.bind(args)(function (arg) {
+			if (typeof arg !== 'function' && !(arg instanceof Router)) {
 				return;
 			}
-			baseUrl += _URL2.default.removeTrailingSlash(matched[0]);
-			matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: remainder });
-		} else if (method === 'all' || handler.method === 'all' || handler.method === method) {
-			matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: '/' });
+			if (typeof arg === 'function' && arg.length === 4) {
+				//error handler登録;
+				self.register({ path: path, type: type, method: method, listener: arg }, 'error');
+				return;
+			}
+			listeners.push(arg);
+		});
+		if (listeners.length !== 0) {
+			self.register({ path: path, type: type, method: method, listeners: listeners });
 		}
-	});
-	return matchedHandlers;
-}
+	},
 
-function getCalledHandlers(path, method, baseUrl, params) {
-	var _this2 = this;
 
-	var self = privates(this);
-	var matchedHandlers = self.getMatchedHandlers(path, method, baseUrl);
-	var calledHandlers = [];
-	var paramsObserver = {};
-	matchedHandlers.forEach(function (matchedHandler) {
-		var handler = matchedHandler.handler;
-		var matched = matchedHandler.matched;
-		var remainder = matchedHandler.remainder;
-		var req = {
-			app: _this2,
-			baseUrl: matchedHandler.baseUrl,
-			params: self.getParams(matched, handler.pattern.keys, params)
+	//matchedはpattern.execの返り値を想定;
+	//元のURLからマッチした部分を引いて先頭にスラッシュをつけたものを返す
+	//(これが新たなpathになり子ルーターに渡される);
+	//元のURLからマッチした部分を引いた結果がURLのpathに相応しくないならnullを返す;
+	getRemainder: function getRemainder(matched) {
+		if (matched.index !== 0) {
+			return null;
+		}
+		var remainder = matched.input.replace(matched[0], '');
+		if (matched[0].slice(-1) !== '/' && remainder[0] !== '/' && remainder !== '') {
+			return null;
+		}
+		return _URL2.default.addFirstSlash(remainder);
+	},
+
+
+	//matchedはpattern.execの返り値を想定。matchedは破壊されない;
+	//keysはpathToRegExp()の返り値の第二引数を想定。URLparameterのproperty名が入っている配列;
+	//parentParamsは継承するparams。子ルーターのURLparameterと親のルーターのURLparameterを併合する時のため。
+	getParams: function getParams(matched, keys, parentParams) {
+		var self = privates(this);
+		var params = self.defaults.mergeParams ? _extends({}, parentParams) : {};
+		matched = matched.concat([]);
+
+		matched.shift();
+		if (matched.length === 0) {
+			return params;
+		}
+
+		keys.forEach(function (value) {
+			if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object') {
+				return;
+			}
+			params[value.name] = matched.shift();
+		});
+
+		return params;
+	},
+
+
+	//paramsObserverとparamsのpropertyに違いがあれば、その違うproperty名を取得する;
+	//取得されたpropertyはそのproperty名で登録されているparamHandlerを取得するために用いられる;
+	getChangedParamKeys: function getChangedParamKeys(paramsObserver, params) {
+		var keys = [];
+		for (var prop in params) {
+			if (paramsObserver[prop] !== params[prop]) {
+				paramsObserver[prop] = params[prop];
+				keys.push(prop);
+			}
+		}
+		return keys;
+	},
+
+
+	/**
+  * keysに含まれているparamHandler全て取得
+  * @param [array] keys getChangedParamKeysの返り値
+  * @return [array] keysにマッチしたparamHandlerが全て入っている配列
+  *     paramHandlerの構造 => { handler, paramValue, req }
+  */
+	getParamHandlers: function getParamHandlers(keys, req) {
+		var self = privates(this);
+		var paramHandlers = [];
+		keys.forEach(function (key) {
+			if (key in self.paramHandlers === false) {
+				return;
+			}
+			paramHandlers.push({
+				handler: {
+					type: self.paramHandlers[key].type,
+					listeners: self.paramHandlers[key].listeners
+				},
+				paramValue: req.params[key],
+				req: req
+			});
+		});
+		return paramHandlers;
+	},
+	getMatchedMiddlewareHandlers: function getMatchedMiddlewareHandlers(handler, req, remainder) {
+		if (typeof handler.listener === 'function') {
+			return [{ handler: handler, req: req }];
+		}
+		if (handler.listener instanceof Router) {
+			return handler.listener.getMatchedHandlers(remainder, req.method, req.baseUrl, req.params);
+		}
+	},
+
+
+	/**
+  * Routerからpathとmethodにマッチするhandlerを全て取得する
+  * @param [string] path パス
+  * @param [string] method httpメソッド名
+  * @return [array] マッチしたhandler(matchedHandler)が全て入っている配列
+  *     matchedHandlerの構造 => { handler, matched, baseUrl, remainder }
+  */
+	getMatchedHandlers: function getMatchedHandlers(path, method, _baseUrl) {
+		var self = privates(this);
+		var matchedHandlers = [];
+		self.handlers.forEach(function (handler) {
+			var baseUrl = _baseUrl;
+			var matched = handler.pattern.exec(path);
+			if (matched === null) {
+				return;
+			}
+			if (handler.type === 'middleware') {
+				var remainder = self.getRemainder(matched);
+				if (remainder === null) {
+					return;
+				}
+				baseUrl += _URL2.default.removeTrailingSlash(matched[0]);
+				matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: remainder });
+			} else if (method === 'all' || handler.method === 'all' || handler.method === method) {
+				matchedHandlers.push({ handler: handler, matched: matched, baseUrl: baseUrl, remainder: '/' });
+			}
+		});
+		return matchedHandlers;
+	},
+	getCalledHandlers: function getCalledHandlers(path, method, baseUrl, params) {
+		var _this2 = this;
+
+		var self = privates(this);
+		var matchedHandlers = self.getMatchedHandlers(path, method, baseUrl);
+		var calledHandlers = [];
+		var paramsObserver = {};
+		matchedHandlers.forEach(function (matchedHandler) {
+			var handler = matchedHandler.handler;
+			var matched = matchedHandler.matched;
+			var remainder = matchedHandler.remainder;
+			var req = {
+				app: _this2,
+				baseUrl: matchedHandler.baseUrl,
+				params: self.getParams(matched, handler.pattern.keys, params)
+			};
+
+			//新たなparameterがあれば、そのparameterのparamHandlersを取得する;
+			var changedParamKeys = self.getChangedParamKeys(paramsObserver, req.params);
+			var paramHandlers = self.getParamHandlers(changedParamKeys, req);
+			calledHandlers.push.apply(calledHandlers, _toConsumableArray(paramHandlers));
+
+			calledHandlers.push({ handler: handler, req: req, remainder: remainder });
+		});
+
+		return calledHandlers;
+	},
+
+
+	// ../sub/gfGetCalledHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
+	gfGetCalledHandler: function gfGetCalledHandler(path, method, baseUrl, params) {
+		var calledHandlers = privates(this).getCalledHandlers(path, method, baseUrl, params);
+		var i = 0;
+		var l = 0;
+		var childRouter = null;
+		var obj = {
+			value: undefined,
+			done: true
 		};
+		return {
+			next: function next(skip) {
+				if (calledHandlers.length <= i) {
+					return {
+						done: true,
+						value: undefined
+					};
+				}
+				var calledHandler = calledHandlers[i];
+				if (calledHandler.handler.listeners.length <= l) {
+					i++;
+					l = 0;
+					return this.next();
+				}
 
-		//新たなparameterがあれば、そのparameterのparamHandlersを取得する;
-		var changedParamKeys = self.getChangedParamKeys(paramsObserver, req.params);
-		var paramHandlers = self.getParamHandlers(changedParamKeys, req);
-		calledHandlers.push.apply(calledHandlers, _toConsumableArray(paramHandlers));
+				if (childRouter) {
+					var nextHandler = childRouter.getNextHandler(skip);
+					if (nextHandler) {
+						return {
+							done: false,
+							value: nextHandler
+						};
+					}
+					l++;
+					childRouter = null;
+					return this.next();
+				}
 
-		calledHandlers.push({ handler: handler, req: req, remainder: remainder });
-	});
+				if (l !== 0 && skip) {
+					i++;
+					l = 0;
+					return this.next();
+				}
 
-	return calledHandlers;
-}
+				var listener = calledHandler.handler.listeners[l];
+				if (listener instanceof Router) {
+					childRouter = privates(listener);
+					childRouter.goGetCalledHandler = childRouter.gfGetCalledHandler(calledHandler.remainder, method, calledHandler.req.baseUrl, calledHandler.req.params);
+					var _nextHandler = childRouter.getNextHandler();
+					if (_nextHandler) {
+						return {
+							done: false,
+							value: _nextHandler
+						};
+					}
+					l++;
+					childRouter = null;
+					return this.next();
+				}
 
-// ../sub/gfGetCalledHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
-function gfGetCalledHandler(path, method, baseUrl, params) {
-	var calledHandlers = privates(this).getCalledHandlers(path, method, baseUrl, params);
-	var i = 0;
-	var l = 0;
-	var childRouter = null;
-	var obj = {
-		value: undefined,
-		done: true
-	};
-	return {
-		next: function next(skip) {
-			if (calledHandlers.length <= i) {
+				l++;
+				//次のhandlerがあるなら最終的にこのobjectを返す;
 				return {
-					done: true,
-					value: undefined
+					done: false,
+					value: {
+						type: calledHandler.handler.type,
+						listener: listener,
+						req: calledHandler.req,
+						paramValue: calledHandler.paramValue
+					}
 				};
 			}
-			var calledHandler = calledHandlers[i];
-			if (calledHandler.handler.listeners.length <= l) {
-				i++;
-				l = 0;
-				return this.next();
-			}
-
-			if (childRouter) {
-				var nextHandler = childRouter.getNextHandler(skip);
-				if (nextHandler) {
-					return {
-						done: false,
-						value: nextHandler
-					};
-				}
-				l++;
-				childRouter = null;
-				return this.next();
-			}
-
-			if (l !== 0 && skip) {
-				i++;
-				l = 0;
-				return this.next();
-			}
-
-			var listener = calledHandler.handler.listeners[l];
-			if (listener instanceof Router) {
-				childRouter = privates(listener);
-				childRouter.goGetCalledHandler = childRouter.gfGetCalledHandler(calledHandler.remainder, method, calledHandler.req.baseUrl, calledHandler.req.params);
-				var _nextHandler = childRouter.getNextHandler();
-				if (_nextHandler) {
-					return {
-						done: false,
-						value: _nextHandler
-					};
-				}
-				l++;
-				childRouter = null;
-				return this.next();
-			}
-
-			l++;
-			//次のhandlerがあるなら最終的にこのobjectを返す;
-			return {
-				done: false,
-				value: {
-					type: calledHandler.handler.type,
-					listener: listener,
-					req: calledHandler.req,
-					paramValue: calledHandler.paramValue
-				}
-			};
-		}
-	};
-}
-
-function getMatchedErrorHandlers(request) {
-	var self = privates(this);
-	var matchedHandlers = [];
-	var method = request.method;
-	var path = request.pathname;
-	self.errorHandlers.forEach(function (handler) {
-		var matched = handler.pattern.exec(path);
-		if (matched === null) {
-			return;
-		}
-
-		if (handler.type === 'middleware') {
-			var remainder = self.getRemainder(matched);
-			if (remainder === null) {
+		};
+	},
+	getMatchedErrorHandlers: function getMatchedErrorHandlers(request) {
+		var self = privates(this);
+		var matchedHandlers = [];
+		var method = request.method;
+		var path = request.pathname;
+		self.errorHandlers.forEach(function (handler) {
+			var matched = handler.pattern.exec(path);
+			if (matched === null) {
 				return;
 			}
-			matchedHandlers.push({ handler: handler });
-		} else if (handler.method === 'all' || method === 'all' || handler.method === method) {
-			matchedHandlers.push({ handler: handler });
-		}
-	});
 
-	return matchedHandlers;
-}
-
-// ../sub/gfGetMatchedErrorHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
-function gfGetMatchedErrorHandler(request) {
-	var matchedHandlers = privates(this).getMatchedErrorHandlers(request);
-	var i = 0;
-	return {
-		next: function next() {
-			if (matchedHandlers.length <= i) {
-				return { done: true, value: undefined };
+			if (handler.type === 'middleware') {
+				var remainder = self.getRemainder(matched);
+				if (remainder === null) {
+					return;
+				}
+				matchedHandlers.push({ handler: handler });
+			} else if (handler.method === 'all' || method === 'all' || handler.method === method) {
+				matchedHandlers.push({ handler: handler });
 			}
-			return { done: false, value: matchedHandlers[i++] };
+		});
+
+		return matchedHandlers;
+	},
+
+
+	// ../sub/gfGetMatchedErrorHandler.jsにgeneratorFunctionで書かれたコードが有るため、コードを読む際はそちらへ;
+	gfGetMatchedErrorHandler: function gfGetMatchedErrorHandler(request) {
+		var matchedHandlers = privates(this).getMatchedErrorHandlers(request);
+		var i = 0;
+		return {
+			next: function next() {
+				if (matchedHandlers.length <= i) {
+					return { done: true, value: undefined };
+				}
+				return { done: false, value: matchedHandlers[i++] };
+			}
+		};
+	},
+	getNextHandler: function getNextHandler() {
+		var genObj = privates(this).goGetCalledHandler.next(arguments[0]);
+		if (genObj.done) {
+			return null;
 		}
-	};
-}
-
-function getNextHandler() {
-	var genObj = privates(this).goGetCalledHandler.next(arguments[0]);
-	if (genObj.done) {
-		return null;
-	}
-	return genObj.value;
-}
-
-function runNextHandler(request, response, error) {
-	var self = privates(this);
-	var nextHandler = null;
-	if (error === 'route') {
-		nextHandler = self.getNextHandler(true);
-	} else if (error !== undefined) {
-		self.goGetMatchedErrorHandlers = self.gfGetMatchedErrorHandler(request);
-		self.runNextErrorHandler(request, response, error);
-		return;
-	} else {
-		nextHandler = self.getNextHandler();
-	}
-	if (nextHandler === null) {
-		return;
-	}
-	_extends(request, nextHandler.req);
-	var next = self.runNextHandler.bind(self, request, response);
-	if (nextHandler.type === 'parameter') {
-		nextHandler.listener(request, response, next, nextHandler.paramValue);
-		return;
-	}
-	nextHandler.listener(request, response, next);
-}
-
-function getNextErrorHandler() {
-	var genObj = privates(this).goGetMatchedErrorHandlers.next();
-	if (genObj.done) {
-		return null;
-	}
-	return genObj.value;
-}
-
-function runNextErrorHandler(request, response, error) {
-	var self = privates(this);
-	var nextHandler = self.getNextErrorHandler();
-	if (nextHandler === null) {
-		return;
-	}
-	var next = self.runNextErrorHandler.bind(self, request, response, error);
-	nextHandler.handler.listener(error, request, response, next);
-}
-
-function register(properties, destination) {
-	var self = privates(this);
-	var handler = properties;
-	if (handler.type === 'middleware') {
-		handler.pattern = (0, _pathToRegexp2.default)(handler.path, null, {
-			sensitive: self.defaults.caseSensitive,
-			strict: self.defaults.strict,
-			end: false
-		});
-	} else {
-		handler.pattern = (0, _pathToRegexp2.default)(handler.path, null, {
-			sensitive: self.defaults.caseSensitive,
-			strict: self.defaults.strict,
-			end: true
-		});
-	}
-
-	if (destination === 'error') {
-		self.errorHandlers.push(handler);
-		return;
-	}
-	self.handlers.push(handler);
-}
-
-function param(names, callback) {
-	var self = privates(this);
-	names.forEach(function (name) {
-		if (name in self.paramHandlers) {
-			self.paramHandlers[name].listeners.push(callback);
+		return genObj.value;
+	},
+	runNextHandler: function runNextHandler(request, response, error) {
+		var self = privates(this);
+		var nextHandler = null;
+		if (error === 'route') {
+			nextHandler = self.getNextHandler(true);
+		} else if (error !== undefined) {
+			self.goGetMatchedErrorHandlers = self.gfGetMatchedErrorHandler(request);
+			self.runNextErrorHandler(request, response, error);
+			return;
+		} else {
+			nextHandler = self.getNextHandler();
+		}
+		if (nextHandler === null) {
 			return;
 		}
-		self.paramHandlers[name] = { listeners: [callback], type: 'parameter' };
-	});
-}
+		_extends(request, nextHandler.req);
+		var next = self.runNextHandler.bind(self, request, response);
+		if (nextHandler.type === 'parameter') {
+			nextHandler.listener(request, response, next, nextHandler.paramValue);
+			return;
+		}
+		nextHandler.listener(request, response, next);
+	},
+	getNextErrorHandler: function getNextErrorHandler() {
+		var genObj = privates(this).goGetMatchedErrorHandlers.next();
+		if (genObj.done) {
+			return null;
+		}
+		return genObj.value;
+	},
+	runNextErrorHandler: function runNextErrorHandler(request, response, error) {
+		var self = privates(this);
+		var nextHandler = self.getNextErrorHandler();
+		if (nextHandler === null) {
+			return;
+		}
+		var next = self.runNextErrorHandler.bind(self, request, response, error);
+		nextHandler.handler.listener(error, request, response, next);
+	},
+	register: function register(properties, destination) {
+		var self = privates(this);
+		var handler = properties;
+		if (handler.type === 'middleware') {
+			handler.pattern = (0, _pathToRegexp2.default)(handler.path, null, {
+				sensitive: self.defaults.caseSensitive,
+				strict: self.defaults.strict,
+				end: false
+			});
+		} else {
+			handler.pattern = (0, _pathToRegexp2.default)(handler.path, null, {
+				sensitive: self.defaults.caseSensitive,
+				strict: self.defaults.strict,
+				end: true
+			});
+		}
+
+		if (destination === 'error') {
+			self.errorHandlers.push(handler);
+			return;
+		}
+		self.handlers.push(handler);
+	}
+};
 },{"./Request":5,"./Response":6,"./URL":8,"./internal":10,"./namespace":13,"path-to-regexp":16}],8:[function(require,module,exports){
 'use strict';
 
