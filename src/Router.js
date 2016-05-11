@@ -86,7 +86,7 @@ export default class Router {
 			location.href = url.href;
 			return;
 		}
-		request.app = this;
+		request.dispatcher = this;
 		internal(request).setURL(url);
 		request.method = method;
 		request.data = options.data;
@@ -347,6 +347,7 @@ function getCalledHandlers(path, method, baseUrl, params) {
 		let matched = matchedHandler.matched;
 		let remainder = matchedHandler.remainder;
 		let req = {
+			app: this,
 			baseUrl: matchedHandler.baseUrl,
 			params: self.getParams(matched, handler.pattern.keys, params),
 		};
