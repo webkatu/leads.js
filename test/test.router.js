@@ -527,6 +527,30 @@ describe('r.options.mergeParams', function() {
 	});
 });
 
+describe('req.app', function() {
+	it('should be app mounted handler', function() {
+		var r = leads.Router();
+		var cr = leads.Router();
+		var app = leads();
+
+		cr.get('/', function(req, res, next) {
+			assert(req.app === cr);
+			next();
+		});
+
+		app.use(function(req, res, next) {
+			assert(req.app === app);
+			next();
+		})
+
+		r.use(cr, app, function(req) {
+			assert(req.app === r);
+		});
+
+		r.dispatch('/', null, options);
+	});
+});
+
 describe('req.baseUrl', function() {
 	it('req.baseUrl === \'/foo\'', function() {
 		var r = leads.Router();
@@ -584,6 +608,30 @@ describe('req.data', function() {
 		});
 
 		r.all('', { changePath: false, addHistory: false, data: data });
+	});
+});
+
+describe('req.dispatcher', function() {
+	it('should be dispatched app or router', function() {
+		var r = leads.Router();
+		var cr = leads.Router();
+		var app = leads();
+
+		cr.get('/', function(req, res, next) {
+			assert(req.dispatcher === r);
+			next();
+		});
+
+		app.use(function(req, res, next) {
+			assert(req.dispatcher === r);
+			next();
+		})
+
+		r.use(cr, app, function(req) {
+			assert(req.dispatcher === r);
+		});
+
+		r.dispatch('/', null, options);
 	});
 });
 
