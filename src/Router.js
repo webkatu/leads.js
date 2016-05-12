@@ -17,6 +17,9 @@ export default class Router {
 		let caseSensitive = false;
 		let mergeParams = false;
 		let strict = false;
+		let addHistory = true;
+		let changePath = true;
+		let transition = true;
 		Object.defineProperties(self.defaults, {
 			caseSensitive: {
 				get: () => { return caseSensitive; },
@@ -31,6 +34,21 @@ export default class Router {
 			strict: {
 				get: () => { return strict; },
 				set: (value) => { strict = Boolean(value); },
+				enumerable: true,
+			},
+			addHistory: {
+				get: () => { return addHistory; },
+				set: (value) => { addHistory = Boolean(value); },
+				enumerable: true,
+			},
+			changePath: {
+				get: () => { return changePath; },
+				set: (value) => { changePath = Boolean(value); },
+				enumerable: true,
+			},
+			transition: {
+				get: () => { return transition; },
+				set: (value) => { transition = Boolean(value); },
 				enumerable: true,
 			},
 		});
@@ -53,18 +71,20 @@ export default class Router {
 	}
 
 	dispatch(urlString, method, options) {
+		let self = privates(this);
+
 		if(typeof urlString !== 'string') return;
 		if(typeof method !== 'string') method = 'all';
 		if(typeof options !== 'object' || options === null) options = {};
-		if(typeof options.addHistory !== 'boolean') options.addHistory = true;
-		if(typeof options.changePath !== 'boolean') options.changePath = true;
+		if(typeof options.addHistory !== 'boolean') options.addHistory = self.defaults.addHistory;
+		if(typeof options.changePath !== 'boolean') options.changePath = self.defaults.changePath;
+		if(typeof options.transition !== 'boolean') options.transition = self.defaults.transition;
 
-		let self = privates(this);
 		let request = new Request();
 		let response = new Response();
 
 		let url = URL.parse(urlString);
-		if(url.origin !== location.origin) {
+		if(url.origin !== location.origin && options.transition) {
 			//別オリジンならurl遷移;
 			location.href = url.href;
 			return;
@@ -74,17 +94,17 @@ export default class Router {
 		request.method = method;
 		request.data = options.data;
 
-		if(options.addHistory === false && options.changePath === false) {
-			//何もしない;
-		}else if(options.addHistory === true && options.changePath === false) {
-			window.history.pushState(null, null, location.href);
-		}else if(options.addHistory === false && options.changePath === true) {
-			window.history.replaceChild(null, null, url.href);
-		}else {
+		if(options.addHistory && options.changePath) {
 			//default;
-			//ex) (true && true) || (undefined && undefined);
 			window.history.pushState(null, null, url.href);
+
+		}else if(options.addHistory && options.changePath === false) {
+			window.history.pushState(null, null, location.href);
+
+		}else if(options.addHistory === false && options.changePath) {
+			window.history.replaceChild(null, null, url.href);
 		}
+		// false && false は何もしない;
 
 		self.goGetCalledHandler = self.gfGetCalledHandler(url.pathname, method, '', {});
 		self.runNextHandler(request, response);
