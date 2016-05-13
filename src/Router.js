@@ -1,4 +1,3 @@
-import internal from './internal';
 import URL from './URL';
 import pathToRegexp from 'path-to-regexp';
 import ns from './namespace';
@@ -90,9 +89,10 @@ export default class Router {
 			return;
 		}
 		request.dispatcher = this;
-		internal(request).setURL(url);
+		request.originalUrl = urlString;
 		request.method = method;
 		request.data = options.data;
+		Object.assign(request, url);
 
 		if(options.addHistory && options.changePath) {
 			//default;

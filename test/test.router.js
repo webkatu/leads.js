@@ -655,12 +655,22 @@ describe('req.dispatcher', function() {
 	});
 });
 
-describe('req.URL', function() {
+describe('req.URL(urlString = \'/foo/bar?a=1&b=2#hash\')', function() {
 	var urlString = '/foo/bar?a=1&b=2#hash';
-	it('req.originalUrl === location.origin + \'/foo/bar?a=1&b=2#hash\'', function() {
+
+	it('req.originalUrl === urlString', function() {
 		var r = leads.Router();
 		r.use('/foo/bar', function(req) {
-			assert(req.originalUrl === location.origin + urlString);
+			assert(req.originalUrl === urlString);
+		});
+
+		r.dispatch(urlString, null, options);
+	});
+
+	it('req.href === location.origin + \'/foo/bar?a=1&b=2#hash\'', function() {
+		var r = leads.Router();
+		r.use('/foo/bar', function(req) {
+			assert(req.href === location.origin + urlString);
 		});
 
 		r.dispatch(urlString, null, options);

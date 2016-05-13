@@ -218,17 +218,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _internal = require('./internal');
-
-var _internal2 = _interopRequireDefault(_internal);
-
 var _namespace = require('./namespace');
 
 var _namespace2 = _interopRequireDefault(_namespace);
-
-var _querystring = require('querystring');
-
-var _querystring2 = _interopRequireDefault(_querystring);
 
 var _jsCookie = require('js-cookie');
 
@@ -242,11 +234,6 @@ var privates = (0, _namespace2.default)();
 
 var Request = function () {
 	function Request() {
-		_classCallCheck(this, Request);
-
-		var self = (0, _internal2.default)(this);
-		self.setURL = setURL.bind(this);
-
 		/*
   this.app = null;
   this.baseUrl = null;
@@ -255,6 +242,7 @@ var Request = function () {
   this.hash = null;
   this.host = null;
   this.hostname = null;
+  this.href = null;
   this.method = null;
   this.origin = null;
   this.originalUrl = null;
@@ -267,6 +255,8 @@ var Request = function () {
   this.search = null;
   this.secure = null;
   */
+
+		_classCallCheck(this, Request);
 	}
 
 	_createClass(Request, [{
@@ -287,23 +277,7 @@ var Request = function () {
 }();
 
 exports.default = Request;
-
-
-function setURL(url) {
-	this.hash = url.hash;
-	this.host = url.host;
-	this.hostname = url.hostname;
-	this.origin = url.origin;
-	this.originalUrl = url.href;
-	this.path = url.path = url.path;
-	this.pathname = url.pathname;
-	this.port = url.port;
-	this.protocol = url.protocol;
-	this.query = _querystring2.default.parse(url.query);
-	this.search = url.search;
-	this.secure = url.auth;
-}
-},{"./internal":10,"./namespace":13,"js-cookie":15,"querystring":3}],6:[function(require,module,exports){
+},{"./namespace":12,"js-cookie":14}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -808,7 +782,7 @@ var privateMethods = {
 		return new Blob([String(param)], { type: type || 'text/plain' });
 	}
 };
-},{"./httpStatusTable":9,"./namespace":13,"js-cookie":15}],7:[function(require,module,exports){
+},{"./httpStatusTable":9,"./namespace":12,"js-cookie":14}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -820,10 +794,6 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _internal = require('./internal');
-
-var _internal2 = _interopRequireDefault(_internal);
 
 var _URL = require('./URL');
 
@@ -955,9 +925,10 @@ var Router = function () {
 				return;
 			}
 			request.dispatcher = this;
-			(0, _internal2.default)(request).setURL(url);
+			request.originalUrl = urlString;
 			request.method = method;
 			request.data = options.data;
+			_extends(request, url);
 
 			if (options.addHistory && options.changePath) {
 				//default;
@@ -1470,12 +1441,19 @@ var privateMethods = {
 		self.handlers.push(handler);
 	}
 };
-},{"./Request":5,"./Response":6,"./URL":8,"./internal":10,"./namespace":13,"path-to-regexp":16}],8:[function(require,module,exports){
+},{"./Request":5,"./Response":6,"./URL":8,"./namespace":12,"path-to-regexp":15}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _querystring = require('querystring');
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var URL = {};
 
 URL.parse = function (urlString) {
@@ -1483,14 +1461,14 @@ URL.parse = function (urlString) {
 	a.href = urlString;
 	a.href = a.href; //for IE;
 	var urlObj = {};
-	urlObj.protocol = a.protocol;
-	urlObj.auth = a.protocol === 'https:';
+	urlObj.protocol = a.protocol; // same as auth;
+	urlObj.secure = a.protocol === 'https:';
 	urlObj.host = a.port === '80' ? a.host.replace(':80', '') : a.host;
 	urlObj.port = a.port === '80' ? '' : a.port;
 	urlObj.hostname = a.hostname;
 	urlObj.hash = a.hash;
 	urlObj.search = a.search;
-	urlObj.query = a.search.slice(1);
+	urlObj.query = _querystring2.default.parse(a.search.slice(1));
 	urlObj.pathname = URL.adjustURLSlash(URL.addFirstSlash(a.pathname));
 	urlObj.path = urlObj.pathname + a.search;
 	urlObj.href = a.href;
@@ -1516,7 +1494,7 @@ URL.adjustURLSlash = function (pathname) {
 };
 
 exports.default = URL;
-},{}],9:[function(require,module,exports){
+},{"querystring":3}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1580,20 +1558,6 @@ exports.default = {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _namespace = require('./namespace');
-
-var _namespace2 = _interopRequireDefault(_namespace);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = (0, _namespace2.default)();
-},{"./namespace":13}],11:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
@@ -1616,7 +1580,7 @@ leads.Router = function (options) {
 };
 
 exports.default = leads;
-},{"./Application":4,"./Router":7}],12:[function(require,module,exports){
+},{"./Application":4,"./Router":7}],11:[function(require,module,exports){
 'use strict';
 
 var _leads = require('./leads');
@@ -1626,7 +1590,7 @@ var _leads2 = _interopRequireDefault(_leads);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 window.leads = _leads2.default;
-},{"./leads":11}],13:[function(require,module,exports){
+},{"./leads":10}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1643,12 +1607,12 @@ function namespace() {
 		return map.get(object);
 	};
 };
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*!
  * JavaScript Cookie v2.1.1
  * https://github.com/js-cookie/js-cookie
@@ -1801,7 +1765,7 @@ module.exports = Array.isArray || function (arr) {
 	return init(function () {});
 }));
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var isarray = require('isarray')
 
 /**
@@ -2193,4 +2157,4 @@ function pathToRegexp (path, keys, options) {
   return stringToRegexp(path, keys, options)
 }
 
-},{"isarray":14}]},{},[12]);
+},{"isarray":13}]},{},[11]);

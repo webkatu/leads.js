@@ -1,3 +1,4 @@
+import qs from 'querystring';
 const URL = {};
 
 URL.parse = (urlString) => {
@@ -5,14 +6,14 @@ URL.parse = (urlString) => {
 	a.href = urlString;
 	a.href = a.href; //for IE;
 	const urlObj = {};
-	urlObj.protocol = a.protocol;
-	urlObj.auth = a.protocol === 'https:';
+	urlObj.protocol = a.protocol; // same as auth;
+	urlObj.secure = a.protocol === 'https:';
 	urlObj.host = (a.port === '80') ? a.host.replace(':80', '') : a.host;
 	urlObj.port = (a.port === '80') ? '' : a.port;
 	urlObj.hostname = a.hostname;
 	urlObj.hash = a.hash;
 	urlObj.search = a.search;
-	urlObj.query = a.search.slice(1);
+	urlObj.query = qs.parse(a.search.slice(1));
 	urlObj.pathname = URL.adjustURLSlash(URL.addFirstSlash(a.pathname));
 	urlObj.path = urlObj.pathname + a.search;
 	urlObj.href = a.href;
