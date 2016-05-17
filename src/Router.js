@@ -83,9 +83,9 @@ export default class Router {
 		let response = new Response();
 
 		let url = URL.parse(urlString);
-		if(url.origin !== location.origin && options.transition) {
+		if(url.origin !== location.origin) {
 			//別オリジンならurl遷移;
-			location.href = url.href;
+			if(options.transition) location.href = url.href;
 			return;
 		}
 		request.dispatcher = this;
