@@ -936,13 +936,14 @@ var Router = function () {
 			request.data = options.data;
 			_extends(request, url);
 
+			var state = { path: urlString };
 			if (options.addHistory && options.changePath) {
 				//default;
-				window.history.pushState(null, null, url.href);
+				window.history.pushState(state, null, url.href);
 			} else if (options.addHistory && options.changePath === false) {
-				window.history.pushState(null, null, location.href);
+				window.history.pushState(state, null, location.href);
 			} else if (options.addHistory === false && options.changePath) {
-				window.history.replaceChild(null, null, url.href);
+				window.history.replaceState(state, null, url.href);
 			}
 			// false && false は何もしない;
 
