@@ -375,9 +375,13 @@ const privateMethods = {
 		xhr.overrideMimeType(type);
 		xhr.responseType = 'blob';
 
-		xhr.onerror = (e) => { error(e); };
-		xhr.onloadend = () => {
-			if(xhr.status !== 200) return;
+		xhr.ontimeout = () => { error(new Error('timeout')); };
+		xhr.onerror = () => { error(new Error('error')); };
+		xhr.onload = () => {
+			if(xhr.status !== 200) {
+				error(new Error(xhr.statusText));
+				return;
+			}
 			self.blobDownload(xhr.response, filename);
 		};
 		xhr.send();
