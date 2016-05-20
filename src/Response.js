@@ -171,7 +171,7 @@ export default class Response {
 	 * dataがfileの場合res.sendFile()で処理をする
 	 * @param [Element|Document|Blob|ArrayBuffer|Object|Number|String] data 送るデータ
 	 *     Elementはoptions.baseElementにElementを追加
-	 *     Documentはルート要素(html)のHTMLを現在のDocumentのルート要素のHTMLと切り替える
+	 *     Documentはdocument.childNodesを全て入れ替える
 	 *     Blob/ArrayBuffer/Objectはres.sendFile()に渡す
 	 *     Number/Stringはそのままoptions.baseElementに表示
 	 * @param [Object] options オプション(任意)
@@ -206,15 +206,22 @@ export default class Response {
 		}
 
 		if(data instanceof Document) {
-			document.documentElement.innerHTML = data.documentElement.innerHTML;
-			//html要素の属性も同じにする;
-			Array.prototype.forEach.bind(data.documentElement.attributes)((attr) => {
-				document.documentElement.setAttributes(attr, data.documentElement.getAttribute(attr));
+			//document以下のnodeを全て消す;
+			let node = null;
+			while(node = document.firstChild) {
+				document.removeChild(node);
+			}
+
+			//documentにdataのnodeを全て追加;
+			let childs = Array.prototype.slice.call(data.childNodes);
+			childs.forEach((node) => {
+				document.appendChild(node);
 			});
+
 			if(options.title !== undefined && options.title !== null) {
 				document.title = options.title;
 			}
-			return document.documentElement;
+			return document;
 		}
 
 		//dataがBlob/ArrayBuffer/Objectの時はsendFileで処理する;
