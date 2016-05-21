@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d lib && browserify ./lib/main.js -o index.js"
+    "build": "babel src -d lib --compact --no-comments && browserify ./lib/main.js -o index.js"
   },
   "repository": {
     "type": "git",
