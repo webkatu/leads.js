@@ -1,10 +1,10 @@
 {
   "name": "leads",
   "version": "0.0.0",
-  "description": "",
+  "description": "leads.js is a client-side routing library that is very similar to express.js.",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d lib --compact --no-comments && browserify ./lib/main.js -o index.js"
+    "build": "babel src -d lib --compact --no-comments && browserify index.js -o leads.js"
   },
   "repository": {
     "type": "git",
@@ -18,9 +18,11 @@
   "homepage": "https://github.com/webkatu/leads.js#readme",
   "dependencies": {
     "js-cookie": "^2.1.1",
-    "path-to-regexp": "^1.2.1"
+    "path-to-regexp": "^1.2.1",
+    "weakmap": "0.0.6"
   },
   "devDependencies": {
+    "browserify": "^12.0.1",
     "babel-cli": "^6.7.5",
     "babel-plugin-transform-object-assign": "^6.5.0",
     "babel-plugin-transform-object-rest-spread": "^6.6.5",

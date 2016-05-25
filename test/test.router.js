@@ -29,6 +29,11 @@ var callParamHandler = function callParamHandler(req, res, next, id) {
 describe('r.use() register handler', function() {
 	it('should call all', function() {
 		var r = leads.Router();
+		console.log(r);
+		r.use(function(req, res, next) {
+			console.log(req);
+			next();
+		});
 		r.use(_call);
 		r.use(_call, _call);
 		r.use(_call, _call, _call);
