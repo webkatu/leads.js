@@ -18,8 +18,7 @@
   "homepage": "https://github.com/webkatu/leads.js#readme",
   "dependencies": {
     "js-cookie": "^2.1.1",
-    "path-to-regexp": "^1.2.1",
-    "weakmap": "0.0.6"
+    "path-to-regexp": "^1.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",
