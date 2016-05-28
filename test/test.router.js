@@ -29,11 +29,6 @@ var callParamHandler = function callParamHandler(req, res, next, id) {
 describe('r.use() register handler', function() {
 	it('should call all', function() {
 		var r = leads.Router();
-		console.log(r);
-		r.use(function(req, res, next) {
-			console.log(req);
-			next();
-		});
 		r.use(_call);
 		r.use(_call, _call);
 		r.use(_call, _call, _call);
@@ -532,6 +527,141 @@ describe('r.options.mergeParams', function() {
 	});
 });
 
+describe('r.options.addHistory', function() {
+	it('should add history', function(done) {
+		var r = leads.Router();
+		r.dispatch('/foo/bar', null, {addHistory: true});
+		var href1 = location.href;
+		r.dispatch('/foo/bar/baz?id=123');
+		var href2 = location.href;
+
+		window.onpopstate = function() {
+			assert(location.href === href1);
+			
+			window.onpopstate = function() {
+				assert(location.href === href2);
+				
+				window.onpopstate = function() {
+					window.onpopstate = null;
+					done();
+
+				}
+				history.go(-2);
+			}			
+			history.forward();
+
+		}
+		history.back();
+	});
+
+	it('should not add history', function(done) {
+		var r = leads.Router();
+		var href = location.href;
+		r.dispatch('/');
+		r.dispatch('/foo/bar', null, {addHistory: false})
+		r.dispatch('/foo/bar/baz', null, {addHistory: false});
+
+		window.onpopstate = function() {
+			assert(location.href === href);
+			window.onpopstate = null;
+			done();
+		}
+		history.back();
+	});
+});
+
+describe('r.options.changePath', function() {
+	it('should change path', function(done) {
+		var r = leads.Router();
+		r.dispatch('/foo/bar', null, {changePath: true});
+		assert(location.pathname === '/foo/bar');
+		r.dispatch('/foo/bar/baz?id=123');
+		assert(location.pathname + location.search === '/foo/bar/baz?id=123');
+
+		window.onpopstate = function() {
+			window.onpopstate = null;
+			done();
+		}
+		history.go(-2);
+	});
+
+	it('should not change path', function(done) {
+		var r = leads.Router();
+		var href = location.href;
+		r.dispatch('/foo/bar', null, {changePath: false})
+		assert(location.pathname !== '/foo/bar');
+		r.dispatch('/foo/bar/baz?id=123', null, {changePath: false});
+		assert(location.pathname + location.search !== '/foo/bar/baz?id=123');
+
+		window.onpopstate = function() {
+			window.onpopstate = null;
+			done();
+		}
+		history.go(-2);
+	});
+});
+
+describe('popstate.e.state.path', function() {
+	it('should exist if addHistory === true && changePath === true', function(done) {
+		var r = leads.Router();
+		r.defaults.addHistory = true;
+		r.defaults.changePath = true;
+
+		r.dispatch('/foo/bar');
+		r.dispatch('/');
+
+		window.onpopstate = function(e) {
+			assert(e.state.path === '/foo/bar');
+
+			window.onpopstate = function() {
+				window.onpopstate = null;
+				done();
+			}
+			history.back();
+		}
+		history.back();
+	});
+
+	it('should exist if addHistory === true && changePath === false', function(done) {
+		var r = leads.Router();
+		r.defaults.addHistory = true;
+		r.defaults.changePath = false;
+
+		r.dispatch('/foo/bar');
+		r.dispatch('/');
+
+		window.onpopstate = function(e) {
+			assert(e.state.path === '/foo/bar');
+
+			window.onpopstate = function() {
+				window.onpopstate = null;
+				done();
+			}
+			history.back();
+		}
+		history.back();
+	});
+
+	it('should exist if addHistory === false && changePath === true', function(done) {
+		var r = leads.Router();
+
+		r.dispatch('/', null, {addHistory: true});
+		r.dispatch('/foo/bar', null, {addHistory: false, changePath: true,});
+		r.dispatch('/', null, {addHistory: true});
+
+		window.onpopstate = function(e) {
+			assert(e.state.path === '/foo/bar');
+
+			window.onpopstate = function() {
+				window.onpopstate = null;
+				done();
+			}
+			history.back();
+		}
+		history.back();
+	});
+});
+
 describe('req.app', function() {
 	it('should be app mounted handler', function() {
 		var r = leads.Router();
@@ -609,7 +739,7 @@ describe('req.cookies', function() {
 			assert(req.cookies.bbb === '222');
 		});
 
-		r.dispatch('');
+		r.dispatch('', null, options);
 	});
 });
 
