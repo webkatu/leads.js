@@ -158,10 +158,10 @@ app.all('*', all);
 app.all('/user/:id', authenticate, show);
 ```
 
-The leads.js is using internally '[path-to-regexp](https://github.com/pillarjs/path-to-regexp)' to match the path.
+The leads.js is using internally [path-to-regexp](https://github.com/pillarjs/path-to-regexp) to match the path.
 
 
-#### <a name="app_all2>app.all(path[, options])</a>
+#### <a name="app_all2">app.all(path[, options])</a>
 
 `app.all(path, options)` is same as `app.dispatch(path, 'all', options)`.
 
@@ -273,7 +273,7 @@ Supported methods
 * options
 
 
-#### <a name="app_method2>app.METHOD(path[, options])</a>
+#### <a name="app_method2">app.METHOD(path[, options])</a>
 
 This is same as `app.dispatch(path, METHOD, options)`.
 
@@ -332,7 +332,7 @@ This matches too
 
 It is also possible to give an array to `name` such as `app.param(['class', 'id'], callback)`
 
-leads.js is using `path-to-regexp`. Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp) about path that contains the parameters.
+Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp) about path that contains the parameters.
 
 
 #### <a name="app_route">app.route(path)</a>
@@ -1235,9 +1235,9 @@ It shows the file using `&lt;object&gt;&lt;/object&gt;`.
 ```javascript
 res.sendFile('/image/cat.png');
 /*
-&lt;body&gt;
-	&lt;object data="/image/cat.png"&gt;&lt;/object&gt;
-&lt;/body&gt;
+<body>
+	<object data="/image/cat.png"></object>
+</body>
 */
 ```
 
@@ -1308,9 +1308,9 @@ The following table is about `res.sendFile()` options.
 It sends HTTP status and the status message.
 
 ```javascript
-res.sendStatus(403) // &lt;body&gt;403 Forbidden&lt;/body&gt;
-res.sendStatus(404) // &lt;body&gt;404 Not Found&lt;/body&gt;
-res.sendStatus(500) // &lt;body&gt;500 Internal Server Error&lt;/body&gt;
+res.sendStatus(403) // <body>403 Forbidden</body>
+res.sendStatus(404) // <body>404 Not Found</body>
+res.sendStatus(500) // <body>500 Internal Server Error</body>
 ```
 
 Please refer to [httpStatusTable](https://github.com/webkatu/leads.js/blob/master/src/httpStatusTable.js) about status message.
@@ -1318,13 +1318,13 @@ Please refer to [httpStatusTable](https://github.com/webkatu/leads.js/blob/maste
 If you specify non-existent status, it returns the status number.
 
 ```javascript
-res.sendStatus(1234) // &lt;body&gt;1234&lt;/body&gt;
+res.sendStatus(1234) // <body>1234</body>
 ```
 
 You can specify any message.
 
 ```javascript
-res.sendStatus(404, { message: 'ERROR 404' })  // &lt;body&gt;ERROR 404&lt;/body&gt;
+res.sendStatus(404, { message: 'ERROR 404' })  // <body>ERROR 404</body>
 ```
 
 The following table is about `res.sendStatus()` options.
@@ -1337,7 +1337,7 @@ The following table is about `res.sendStatus()` options.
 		<tr>
 			<td>baseElement</td>
 			<td>Element</td>
-			<td>An element to show status message.</code>.</td>
+			<td>An element to show status message.</td>
 			<td>document.body</td>
 		</tr>
 		<tr></tr>
@@ -1349,7 +1349,7 @@ The following table is about `res.sendStatus()` options.
 		</tr>
 		<tr></tr>
 		<tr>
-			<td>message.</td>
+			<td>message</td>
 			<td>String</td>
 			<td>You can specify any message to show.</td>
 			<td></td>
