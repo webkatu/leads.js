@@ -1,1 +1,1 @@
-window.leads = require('./lib/leads').default;
+module.exports = require('./lib/leads').default;

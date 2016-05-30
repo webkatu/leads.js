@@ -4,7 +4,7 @@
   "description": "leads.js is a client-side routing library that is very similar to express.js.",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d lib --compact --no-comments && browserify index.js -o leads.js"
+    "build": "babel src -d lib --compact --no-comments && browserify -s leads index.js -o leads.js"
   },
   "repository": {
     "type": "git",
