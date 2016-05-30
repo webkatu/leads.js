@@ -86,7 +86,7 @@ $ git clone https://github.com/webkatu/leads.js
 
 This API is referring the [4.x API of Express](http://expressjs.com/ja/4x/api.html).
 
-### <a name="leads1>leads()</a>
+### <a name="leads1">leads()</a>
 
 This is a main function that creates an application.
 
@@ -95,7 +95,7 @@ var app = leads();
 ```
 
 
-#### <a name="leads2>leads([options])</a>
+#### <a name="leads2">leads([options])</a>
 
 It creates an instance of [Application](#application).
 
