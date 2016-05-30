@@ -17,7 +17,7 @@ app.dispatch('/', 'get'); // or app.get('/');
 Define handlers.
 
 ```javascript
-app = leads();
+var app = leads();
 
 app.all('/', indexHandler);
 app.all('/user/:id', load, show);
@@ -178,7 +178,7 @@ The second param is specified HTTP method. However, leads.js doesn't do actually
 This is one of the mere conditions when matching routes.
 
 ```javascript
-app.all('/greet', function(req, res, next) {
+app.post('/greet', function(req, res, next) {
 	console.log('Hello');
 	next();
 });
@@ -229,7 +229,7 @@ app.post('/signup', function(req, res, next) {
 });
 
 app.dispatch('/signup', 'post', {
-	data: new FormData();
+	data: new FormData(),
 });
 /* console
 FormData {}
@@ -301,7 +301,6 @@ app.dispatch('/user/123');
 ID is 123
 Hi user
 */
-
 ```
 
 Same param callback is not called in succession.
@@ -327,7 +326,6 @@ ID is 456
 This matches
 This matches too
 */
-
 ```
 
 It is also possible to give an array to `name` such as `app.param(['class', 'id'], callback)`
@@ -594,6 +592,7 @@ When dispatching, it is created and contain context.
 var subApp = leads();
 subApp.get('/', function(req, res, next) {
 	console.log(req.app === subApp); // true
+	next();
 });
 
 var r = leads.Router();
@@ -614,6 +613,7 @@ var r = leads.Router();
 
 r.use('/123', function(req, res, next) {
 	console.log(req.baseUrl); // /user/123
+	next();
 });
 
 r.get('/123', function(req, res, next) {
