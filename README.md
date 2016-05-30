@@ -1230,7 +1230,7 @@ res.send('Hello', { title: 'Hello' });
 
 (Experimental method)
 
-It shows the file using `&lt;object&gt;&lt;/object&gt;`.
+It shows the file using `<object></object>`.
 
 ```javascript
 res.sendFile('/image/cat.png');
