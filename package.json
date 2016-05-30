@@ -2,6 +2,13 @@
   "name": "leads",
   "version": "0.0.0",
   "description": "leads.js is a client-side routing library that is very similar to express.js.",
+  "keywords": [
+    "express",
+    "route",
+    "router",
+    "routing",
+    "client"
+  ],
   "main": "index.js",
   "scripts": {
     "build": "babel src -d lib --compact --no-comments && browserify -s leads index.js -o leads.js"
@@ -10,7 +17,11 @@
     "type": "git",
     "url": "git+https://github.com/webkatu/leads.js.git"
   },
-  "author": "",
+  "author": {
+    "name": "Yoshiyuki Minami",
+    "mail": "mail@webkatu.com",
+    "url": "https://twitter.com/vinyufi"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/webkatu/leads.js/issues"
@@ -27,5 +38,14 @@
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-es2015-loose": "^7.0.0",
     "browserify": "^12.0.1"
-  }
+  },
+  "files": [
+    "lib/",
+    "src/",
+    "sub/",
+    "index.js",
+    "leads.js",
+    "LICENSE",
+    "README.md"
+  ]
 }
