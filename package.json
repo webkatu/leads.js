@@ -1,6 +1,6 @@
 {
   "name": "leads",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "leads.js is a client-side routing library that is very similar to express.js.",
   "main": "index.js",
   "scripts": {
