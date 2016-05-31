@@ -1432,8 +1432,8 @@ If you want to support IE10+, use [leads-router](https://github.com/webkatu/lead
 
 ## Author
 
-Twitter [@vinyufi](https://twitter.com/vinyufi)
-Blog [webkatu.com](http://www.webkatu.com)
+* Twitter [@vinyufi](https://twitter.com/vinyufi)
+* Blog [webkatu.com](http://www.webkatu.com)
 
 
 ## License
